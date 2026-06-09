@@ -41,6 +41,9 @@ import type {
   DietType,
   CalculatorFormData,
   CarbonResult,
+  TransportData,
+  EnergyData,
+  DietData,
 } from '../types';
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Tooltip, Legend);
@@ -54,9 +57,9 @@ export default function Calculator() {
   const [saved, setSaved] = useState(false);
 
   // Form state
-  const [transport, setTransport] = useState({ ...DEFAULT_TRANSPORT });
-  const [energy, setEnergy] = useState({ ...DEFAULT_ENERGY });
-  const [diet, setDiet] = useState({ ...DEFAULT_DIET });
+  const [transport, setTransport] = useState<TransportData>({ ...DEFAULT_TRANSPORT });
+  const [energy, setEnergy] = useState<EnergyData>({ ...DEFAULT_ENERGY });
+  const [diet, setDiet] = useState<DietData>({ ...DEFAULT_DIET });
 
   const formData: CalculatorFormData = useMemo(
     () => ({ transport, energy, diet }),
