@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Leaf, Menu, X, ChevronDown, LogOut } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { NAV_LINKS } from '../lib/constants';
+import { NAV_LINKS, ROUTES } from '../lib/constants';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -54,7 +54,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-inner">
         {/* Logo */}
-        <Link to="/" className="navbar-logo" onClick={() => setIsOpen(false)}>
+        <Link to={ROUTES.home} className="navbar-logo" onClick={() => setIsOpen(false)}>
           <div className="logo-icon-wrapper">
             <Leaf size={22} />
           </div>
@@ -113,7 +113,7 @@ export default function Navbar() {
             </div>
           ) : (
             <Link
-              to="/login"
+              to={ROUTES.login}
               className="ml-4 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-slate-950 text-sm font-bold rounded-xl transition-all shadow-md shadow-green-500/5 hover:shadow-green-500/15 text-center text-decoration-none"
             >
               {t('signIn')}
@@ -176,7 +176,7 @@ export default function Navbar() {
               </div>
             ) : (
               <Link
-                to="/login"
+                to={ROUTES.login}
                 onClick={() => setIsOpen(false)}
                 className="w-full py-2.5 flex items-center justify-center bg-gradient-to-r from-green-500 to-emerald-600 text-slate-950 font-bold rounded-xl transition-all shadow-md block text-center text-decoration-none"
               >
@@ -186,6 +186,7 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
     </nav>
   );
 }

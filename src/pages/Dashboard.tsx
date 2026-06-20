@@ -4,15 +4,14 @@
  * Renders statistical summary panels, historical charts, comparisons, and exposes PDF export features.
  */
 
-import { useMemo, lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { Calculator, FileDown, Trash2 } from 'lucide-react';
-import toast from 'react-hot-toast';
 
-import { useCarbon } from '../hooks/useCarbon';
-import { AVERAGES } from '../lib/constants';
 import { useLanguage } from '../context/LanguageContext';
+import { useDashboardStats } from '../hooks/useDashboardStats';
 import { generateInsights } from '../lib/insights';
+import { ROUTES, COLORS, PDF_CONFIG } from '../lib/constants';
 
 import DashboardStats from '../components/dashboard/DashboardStats';
 import DashboardHistory from '../components/dashboard/DashboardHistory';
@@ -37,97 +36,14 @@ function ChartsFallback() {
 }
 
 export default function Dashboard() {
-  const { footprints, clearHistory } = useCarbon();
   const { locale, t } = useLanguage();
-
-  const latest = footprints[0];
-
-  // Derive current score cards data
-  const stats = useMemo(() => {
-    if (!latest) return null;
-    const monthly = latest.result.totalMonthly;
-    const annual = latest.result.totalAnnual;
-    const score = latest.result.score;
-
-    // vs India Avg
-    const vsIndia = Math.round(
-      ((monthly - AVERAGES.india.monthly) / AVERAGES.india.monthly) * 100
-    );
-    // vs Global Avg
-    const vsGlobal = Math.round(
-      ((monthly - AVERAGES.global.monthly) / AVERAGES.global.monthly) * 100
-    );
-
-    return { monthly, annual, score, vsIndia, vsGlobal };
-  }, [latest]);
-
-  const handleClearData = () => {
-    if (window.confirm(locale === 'en' ? 'Are you sure you want to delete all footprint history?' : 'क्या आप वाकई सभी फुटप्रिंट इतिहास को हटाना चाहते हैं?')) {
-      clearHistory();
-      toast.success(locale === 'en' ? 'Data cleared successfully!' : 'डेटा सफलतापूर्वक हटा दिया गया!');
-    }
-  };
-
-  const handleDownloadReport = async () => {
-    if (!latest || !stats) return;
-
-    const toastId = toast.loading(locale === 'en' ? 'Generating your PDF report...' : 'आपकी पीडीएफ रिपोर्ट बनाई जा रही है...');
-
-    // Temporarily append template to body to render
-    const element = document.getElementById('pdf-report-template');
-    if (!element) {
-      toast.dismiss(toastId);
-      toast.error('Failed to locate PDF template.');
-      return;
-    }
-
-    element.style.left = '0px';
-    element.style.top = '0px';
-
-    try {
-      // Dynamic imports keep jsPDF and html2canvas out of the initial chunk:
-      // they are only downloaded when the user clicks "Download Report".
-      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-        import('html2canvas'),
-        import('jspdf'),
-      ]);
-
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#09090b',
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210; // A4 size width
-      const pageHeight = 297; // A4 size height
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save(`ecotrack-report-${new Date().toISOString().split('T')[0]}.pdf`);
-      toast.dismiss(toastId);
-      toast.success(locale === 'en' ? 'Report downloaded!' : 'रिपोर्ट डाउनलोड हो गई!');
-    } catch (error) {
-      console.error(error);
-      toast.dismiss(toastId);
-      toast.error(locale === 'en' ? 'Failed to generate PDF.' : 'पीडीएफ बनाने में विफल।');
-    } finally {
-      element.style.left = '-9999px';
-      element.style.top = '-9999px';
-    }
-  };
+  const {
+    footprints,
+    latest,
+    stats,
+    handleClearData,
+    handleDownloadReport,
+  } = useDashboardStats();
 
   // ===== Empty state =====
   if (!latest || !stats) {
@@ -140,7 +56,7 @@ export default function Dashboard() {
             <p className="empty-desc">
               {t('noDataDesc')}
             </p>
-            <Link to="/calculator" className="btn btn-primary btn-lg text-decoration-none">
+            <Link to={ROUTES.calculator} className="btn btn-primary btn-lg text-decoration-none">
               <Calculator size={20} />
               {t('calcFootprintBtn')}
             </Link>
@@ -151,7 +67,7 @@ export default function Dashboard() {
   }
 
   // Generate top tips for PDF Report
-  const pdfTips = generateInsights(latest.result.breakdown, latest.result.totalMonthly).slice(0, 3);
+  const pdfTips = generateInsights(latest.result.breakdown, latest.result.totalMonthly).slice(0, PDF_CONFIG.tipLimit);
 
   return (
     <div className="page-wrapper">
@@ -212,47 +128,47 @@ export default function Dashboard() {
           id="pdf-report-template"
           style={{
             position: 'absolute',
-            left: '-9999px',
-            top: '-9999px',
+            left: PDF_CONFIG.hiddenOffset,
+            top: PDF_CONFIG.hiddenOffset,
             width: '800px',
-            backgroundColor: '#09090b',
-            color: '#ffffff',
+            backgroundColor: COLORS.bgDark,
+            color: COLORS.textLight,
             padding: '40px',
             fontFamily: 'sans-serif',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #22c55e', paddingBottom: '20px', marginBottom: '30px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${COLORS.primaryGreen}`, paddingBottom: '20px', marginBottom: '30px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ fontSize: '32px' }}>🌿</span>
-              <span style={{ fontSize: '28px', fontWeight: 'bold', letterSpacing: '1px', color: '#22c55e' }}>EcoTrack Report</span>
+              <span style={{ fontSize: '28px', fontWeight: 'bold', letterSpacing: '1px', color: COLORS.primaryGreen }}>EcoTrack Report</span>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ margin: '0', fontSize: '12px', color: '#a1a1aa' }}>Generated on:</p>
-              <p style={{ margin: '0', fontSize: '15px', fontWeight: 'bold', color: '#ffffff' }}>{new Date().toLocaleDateString('en-IN')}</p>
+              <p style={{ margin: '0', fontSize: '12px', color: COLORS.textMuted }}>Generated on:</p>
+              <p style={{ margin: '0', fontSize: '15px', fontWeight: 'bold', color: COLORS.textLight }}>{new Date().toLocaleDateString('en-IN')}</p>
             </div>
           </div>
 
           <div style={{ marginBottom: '30px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase', color: '#a1a1aa', margin: '0 0 12px 0' }}>Carbon Footprint Summary</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase', color: COLORS.textMuted, margin: '0 0 12px 0' }}>Carbon Footprint Summary</h2>
             <div style={{ display: 'flex', gap: '20px' }}>
-              <div style={{ flex: '1', backgroundColor: '#18181b', border: '1px solid #27272a', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#a1a1aa' }}>Monthly Footprint</p>
-                <p style={{ margin: '0', fontSize: '28px', fontWeight: 'bold', color: '#22c55e' }}>{stats.monthly.toFixed(1)} <span style={{ fontSize: '14px' }}>kg/mo</span></p>
+              <div style={{ flex: '1', backgroundColor: COLORS.bgCard, border: `1px solid ${COLORS.borderDark}`, padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: COLORS.textMuted }}>Monthly Footprint</p>
+                <p style={{ margin: '0', fontSize: '28px', fontWeight: 'bold', color: COLORS.primaryGreen }}>{stats.monthly.toFixed(1)} <span style={{ fontSize: '14px' }}>kg/mo</span></p>
               </div>
-              <div style={{ flex: '1', backgroundColor: '#18181b', border: '1px solid #27272a', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#a1a1aa' }}>Annual Projection</p>
-                <p style={{ margin: '0', fontSize: '28px', fontWeight: 'bold', color: '#22c55e' }}>{stats.annual.toFixed(2)} <span style={{ fontSize: '14px' }}>tons/yr</span></p>
+              <div style={{ flex: '1', backgroundColor: COLORS.bgCard, border: `1px solid ${COLORS.borderDark}`, padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: COLORS.textMuted }}>Annual Projection</p>
+                <p style={{ margin: '0', fontSize: '28px', fontWeight: 'bold', color: COLORS.primaryGreen }}>{stats.annual.toFixed(2)} <span style={{ fontSize: '14px' }}>tons/yr</span></p>
               </div>
-              <div style={{ flex: '1', backgroundColor: '#18181b', border: '1px solid #27272a', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#a1a1aa' }}>Score Level</p>
-                <p style={{ margin: '0', fontSize: '28px', fontWeight: 'bold', color: '#3b82f6' }}>{stats.score}</p>
+              <div style={{ flex: '1', backgroundColor: COLORS.bgCard, border: `1px solid ${COLORS.borderDark}`, padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: COLORS.textMuted }}>Score Level</p>
+                <p style={{ margin: '0', fontSize: '28px', fontWeight: 'bold', color: COLORS.blueScore }}>{stats.score}</p>
               </div>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '30px', marginBottom: '30px' }}>
             <div style={{ flex: '1.2' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase', color: '#a1a1aa', margin: '0 0 12px 0' }}>Emissions Breakdown</h2>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase', color: COLORS.textMuted, margin: '0 0 12px 0' }}>Emissions Breakdown</h2>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <tbody>
                   {[
@@ -261,33 +177,34 @@ export default function Dashboard() {
                     { label: 'Diet Habits', value: latest.result.breakdown.diet },
                     { label: 'Lifestyle & Shopping', value: latest.result.breakdown.lifestyle }
                   ].map((row, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #27272a' }}>
-                      <td style={{ padding: '10px 0', fontSize: '14px', color: '#e4e4e7' }}>{row.label}</td>
-                      <td style={{ padding: '10px 0', fontSize: '14px', fontWeight: 'bold', textAlign: 'right', color: '#ffffff' }}>{row.value.toFixed(1)} kg CO₂</td>
+                    <tr key={i} style={{ borderBottom: `1px solid ${COLORS.borderDark}` }}>
+                      <td style={{ padding: '10px 0', fontSize: '14px', color: COLORS.textPrimary }}>{row.label}</td>
+                      <td style={{ padding: '10px 0', fontSize: '14px', fontWeight: 'bold', textAlign: 'right', color: COLORS.textLight }}>{row.value.toFixed(1)} kg CO₂</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div style={{ flex: '1', backgroundColor: '#18181b', border: '1px solid #27272a', padding: '20px', borderRadius: '12px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase', color: '#22c55e', margin: '0 0 15px 0' }}>Top Action Recommendations</h2>
+            <div style={{ flex: '1', backgroundColor: COLORS.bgCard, border: `1px solid ${COLORS.borderDark}`, padding: '20px', borderRadius: '12px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase', color: COLORS.primaryGreen, margin: '0 0 15px 0' }}>Top Action Recommendations</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 {pdfTips.map((tip, idx) => (
-                  <div key={idx} style={{ borderLeft: '3px solid #22c55e', paddingLeft: '10px' }}>
-                    <p style={{ margin: '0 0 3px 0', fontSize: '14px', fontWeight: 'bold', color: '#ffffff' }}>{tip.icon} {tip.title}</p>
-                    <p style={{ margin: '0', fontSize: '11px', color: '#a1a1aa', lineHeight: '1.4' }}>{tip.description}</p>
+                  <div key={idx} style={{ borderLeft: `3px solid ${COLORS.primaryGreen}`, paddingLeft: '10px' }}>
+                    <p style={{ margin: '0 0 3px 0', fontSize: '14px', fontWeight: 'bold', color: COLORS.textLight }}>{tip.icon} {tip.title}</p>
+                    <p style={{ margin: '0', fontSize: '11px', color: COLORS.textMuted, lineHeight: '1.4' }}>{tip.description}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid #27272a', paddingTop: '20px', textAlign: 'center' }}>
-            <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#a1a1aa' }}>EcoTrack Carbon Tracker &bull; Privacy-first Footprint Metrics</p>
-            <p style={{ margin: '0', fontSize: '10px', color: '#71717a' }}>This report is generated locally inside the browser. No personal data was uploaded to any server.</p>
+          <div style={{ borderTop: `1px solid ${COLORS.borderDark}`, paddingTop: '20px', textAlign: 'center' }}>
+            <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: COLORS.textMuted }}>EcoTrack Carbon Tracker &bull; Privacy-first Footprint Metrics</p>
+            <p style={{ margin: '0', fontSize: '10px', color: COLORS.textGray }}>This report is generated locally inside the browser. No personal data was uploaded to any server.</p>
           </div>
         </div>
       </div>
     </div>
   );
 }
+

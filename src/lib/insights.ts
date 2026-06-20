@@ -1,6 +1,14 @@
 import type { InsightTip } from '../types';
 
-/** Generate manual insights based on user's carbon data */
+/**
+ * Generate actionable eco-tips based on the user's carbon breakdown.
+ * Evaluates each category against threshold values and selects relevant tips,
+ * returning one tip per category plus one general tip — always five in total.
+ *
+ * @param breakdown - Per-category monthly emissions (transport, energy, diet, lifestyle) in kg CO₂.
+ * @param totalMonthly - The total combined monthly emissions in kg CO₂.
+ * @returns An array of InsightTip objects with title, description, co2Savings, difficulty, category, and icon.
+ */
 export function generateInsights(
   breakdown: { transport: number; energy: number; diet: number; lifestyle: number },
   totalMonthly: number

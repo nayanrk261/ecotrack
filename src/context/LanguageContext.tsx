@@ -1,8 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { STORAGE_KEYS } from '../lib/constants';
 
 export type Locale = 'en' | 'hi';
+
 
 const translations = {
   en: {
@@ -224,7 +226,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>(() => {
     try {
-      const saved = localStorage.getItem('ecotrack_locale');
+      const saved = localStorage.getItem(STORAGE_KEYS.locale);
       return (saved === 'hi' ? 'hi' : 'en') as Locale;
     } catch {
       return 'en';
@@ -233,13 +235,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('ecotrack_locale', locale);
+      localStorage.setItem(STORAGE_KEYS.locale, locale);
     } catch (e) {
       console.error('Failed to save language setting:', e);
     }
     // Keep the <html lang="…"> attribute in sync for screen-readers & SEO
     document.documentElement.lang = locale;
   }, [locale]);
+
 
   const toggleLanguage = () => {
     setLocale((prev) => (prev === 'en' ? 'hi' : 'en'));

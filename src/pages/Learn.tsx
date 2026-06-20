@@ -15,7 +15,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import { BookOpen } from 'lucide-react';
 
-import { KEY_FACTS, EMISSION_SOURCES, QUICK_TIPS } from '../lib/constants';
+import { KEY_FACTS, EMISSION_SOURCES, QUICK_TIPS, COLORS } from '../lib/constants';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/Card';
 
@@ -24,42 +24,6 @@ import QuickTipCard from '../components/learn/QuickTipCard';
 import ResourceCard from '../components/learn/ResourceCard';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
-
-const getLocalizedSourceLabel = (label: string, locale: string) => {
-  if (locale === 'en') return label;
-  switch (label) {
-    case 'Electricity & Heat': return 'बिजली और गर्मी';
-    case 'Transport': return 'परिवहन';
-    case 'Manufacturing': return 'विनिर्माण';
-    case 'Agriculture': return 'कृषि';
-    case 'Buildings': return 'भवन';
-    default: return label;
-  }
-};
-
-const RESOURCES_DATA = [
-  {
-    title: 'UN Climate Action',
-    titleHi: 'संयुक्त राष्ट्र जलवायु कार्रवाई',
-    desc: 'Official United Nations resource on climate change initiatives and global agreements.',
-    descHi: 'जलवायु परिवर्तन पहल और वैश्विक समझौतों पर आधिकारिक संयुक्त राष्ट्र संसाधन।',
-    url: 'https://www.un.org/climatechange',
-  },
-  {
-    title: 'NASA Climate',
-    titleHi: 'नासा क्लाइमेट',
-    desc: "NASA's comprehensive data, evidence, and visualizations on Earth's changing climate.",
-    descHi: 'पृथ्वी की बदलती जलवायु पर नासा का व्यापक डेटा, प्रमाण और विज़ुअलाइज़ेशन।',
-    url: 'https://climate.nasa.gov',
-  },
-  {
-    title: 'IPCC Reports',
-    titleHi: 'आईपीसीसी रिपोर्ट',
-    desc: 'Scientific assessments from the Intergovernmental Panel on Climate Change.',
-    descHi: 'इंटरगवर्नमेंटल पैनल ऑन क्लाइमेट चेंज (IPCC) से वैज्ञानिक आकलन।',
-    url: 'https://www.ipcc.ch',
-  },
-];
 
 export default function Learn() {
   const { locale, t } = useLanguage();
@@ -86,16 +50,17 @@ export default function Learn() {
     },
     scales: {
       x: {
-        ticks: { color: '#a1a1aa' },
-        grid: { color: '#1a1a1a' },
+        ticks: { color: COLORS.textMuted },
+        grid: { color: COLORS.chartGrid },
         max: 40,
       },
       y: {
-        ticks: { color: '#a1a1aa', font: { size: 13 } },
+        ticks: { color: COLORS.textMuted, font: { size: 13 } },
         grid: { display: false },
       },
     },
   };
+
 
   return (
     <div className="page-wrapper">
@@ -198,3 +163,40 @@ export default function Learn() {
     </div>
   );
 }
+
+const getLocalizedSourceLabel = (label: string, locale: string): string => {
+  if (locale === 'en') return label;
+  switch (label) {
+    case 'Electricity & Heat': return 'बिजली और गर्मी';
+    case 'Transport': return 'परिवहन';
+    case 'Manufacturing': return 'विनिर्माण';
+    case 'Agriculture': return 'कृषि';
+    case 'Buildings': return 'भवन';
+    default: return label;
+  }
+};
+
+const RESOURCES_DATA = [
+  {
+    title: 'UN Climate Action',
+    titleHi: 'संयुक्त राष्ट्र जलवायु कार्रवाई',
+    desc: 'Official United Nations resource on climate change initiatives and global agreements.',
+    descHi: 'जलवायु परिवर्तन पहल और वैश्विक समझौतों पर आधिकारिक संयुक्त राष्ट्र संसाधन।',
+    url: 'https://www.un.org/climatechange',
+  },
+  {
+    title: 'NASA Climate',
+    titleHi: 'नासा क्लाइमेट',
+    desc: "NASA's comprehensive data, evidence, and visualizations on Earth's changing climate.",
+    descHi: 'पृथ्वी की बदलती जलवायु पर नासा का व्यापक डेटा, प्रमाण और विज़ुअलाइज़ेशन।',
+    url: 'https://climate.nasa.gov',
+  },
+  {
+    title: 'IPCC Reports',
+    titleHi: 'आईपीसीसी रिपोर्ट',
+    desc: 'Scientific assessments from the Intergovernmental Panel on Climate Change.',
+    descHi: 'इंटरगवर्नमेंटल पैनल ऑन क्लाइमेट चेंज (IPCC) से वैज्ञानिक आकलन।',
+    url: 'https://www.ipcc.ch',
+  },
+];
+

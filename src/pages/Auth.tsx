@@ -11,6 +11,9 @@ import toast from 'react-hot-toast';
 
 import { useAuth } from '../context/AuthContext';
 import { useCarbon } from '../hooks/useCarbon';
+import { safeJsonParse } from '../lib/errorHandling';
+import { STORAGE_KEYS, ROUTES } from '../lib/constants';
+import type { CalculatorFormData, CarbonResult } from '../types';
 
 import SignInForm from '../components/auth/SignInForm';
 import SignUpForm from '../components/auth/SignUpForm';
@@ -35,21 +38,19 @@ export default function Auth() {
 
   const handleRedirect = useCallback(() => {
     // Check if there was a pending guest calculation to save
-    const pendingCalcRaw = sessionStorage.getItem('ecotrack_pending_calculation');
+    const pendingCalcRaw = sessionStorage.getItem(STORAGE_KEYS.pendingCalculation);
     if (pendingCalcRaw) {
-      try {
-        const { formData, result } = JSON.parse(pendingCalcRaw);
-        saveResult(formData, result);
+      const parsed = safeJsonParse<{ formData: CalculatorFormData; result: CarbonResult } | null>(pendingCalcRaw, null);
+      if (parsed) {
+        saveResult(parsed.formData, parsed.result);
         toast.success('Your calculation has been saved to your account!');
-        sessionStorage.removeItem('ecotrack_pending_calculation');
-      } catch (e) {
-        console.error('Failed to restore pending calculation:', e);
+        sessionStorage.removeItem(STORAGE_KEYS.pendingCalculation);
       }
     }
 
     // Redirect to requested page or fall back to home
     const state = location.state as LocationState | null;
-    const from = state?.from?.pathname || '/dashboard';
+    const from = state?.from?.pathname || ROUTES.dashboard;
     navigate(from, { replace: true });
   }, [location.state, navigate, saveResult]);
 
@@ -111,19 +112,19 @@ export default function Auth() {
           subtitle: 'Sign in to unlock customized carbon-reduction advice.',
         };
       }
-      if (action === 'protect' && fromPath === '/dashboard') {
+      if (action === 'protect' && fromPath === ROUTES.dashboard) {
         return {
           title: 'Access Dashboard',
           subtitle: 'Sign in to view your history and carbon trends.',
         };
       }
-      if (action === 'protect' && fromPath === '/actions') {
+      if (action === 'protect' && fromPath === ROUTES.actions) {
         return {
           title: 'Track Green Actions',
           subtitle: 'Sign in to view and tick off your eco actions list.',
         };
       }
-      if (action === 'protect' && fromPath === '/insights') {
+      if (action === 'protect' && fromPath === ROUTES.insights) {
         return {
           title: 'View AI Insights',
           subtitle: 'Sign in to access your customized carbon-reduction advice.',
@@ -146,19 +147,19 @@ export default function Auth() {
           subtitle: 'Create an account to unlock customized carbon-reduction advice.',
         };
       }
-      if (action === 'protect' && fromPath === '/dashboard') {
+      if (action === 'protect' && fromPath === ROUTES.dashboard) {
         return {
           title: 'Access Dashboard',
           subtitle: 'Create an account to view your history and carbon trends.',
         };
       }
-      if (action === 'protect' && fromPath === '/actions') {
+      if (action === 'protect' && fromPath === ROUTES.actions) {
         return {
           title: 'Track Green Actions',
           subtitle: 'Create an account to view and tick off your eco actions list.',
         };
       }
-      if (action === 'protect' && fromPath === '/insights') {
+      if (action === 'protect' && fromPath === ROUTES.insights) {
         return {
           title: 'View AI Insights',
           subtitle: 'Create an account to access your customized carbon-reduction advice.',
@@ -170,6 +171,7 @@ export default function Auth() {
       };
     }
   }, [mode, location.state]);
+
 
   return (
     <div className="page-wrapper min-h-[85vh] flex items-center justify-center relative overflow-hidden px-4 py-12">

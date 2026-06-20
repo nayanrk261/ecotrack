@@ -5,6 +5,7 @@
 
 import { STORAGE_KEYS } from './constants';
 import type { SavedFootprint } from '../types';
+import { safeJsonParse } from './errorHandling';
 
 /**
  * Safely get a value from localStorage with JSON parsing.
@@ -15,14 +16,11 @@ import type { SavedFootprint } from '../types';
  * @returns The parsed item or the fallback value.
  */
 export function getFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw === null) return fallback;
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
+  const raw = localStorage.getItem(key);
+  if (raw === null) return fallback;
+  return safeJsonParse<T>(raw, fallback);
 }
+
 
 /**
  * Safely set a value in localStorage with JSON stringify.

@@ -4,10 +4,17 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { safeJsonParse } from '../lib/errorHandling';
 
 /**
- * Custom hook for syncing React state with localStorage.
- * Handles JSON parse/stringify and errors gracefully.
+ * Custom hook that provides React state synchronized with a `localStorage` key.
+ * On mount, reads the stored value and parses it; on updates, writes back atomically.
+ * Handles cross-tab synchronization via the `storage` event and gracefully
+ * degrades if the storage quota is exceeded.
+ *
+ * @param key - The localStorage key to bind state to.
+ * @param initialValue - The fallback value used when no stored value exists.
+ * @returns A stateful tuple `[value, setValue]` matching the React `useState` signature.
  */
 export function useLocalStorage<T>(
   key: string,
@@ -21,12 +28,8 @@ export function useLocalStorage<T>(
   }, [initialValue]);
 
   const [storedValue, setStoredValue] = useState<T>(() => {
-    try {
-      const item = localStorage.getItem(key);
-      return item ? (JSON.parse(item) as T) : initialValue;
-    } catch {
-      return initialValue;
-    }
+    const item = localStorage.getItem(key);
+    return item ? safeJsonParse<T>(item, initialValue) : initialValue;
   });
 
   const setValue = useCallback(
@@ -46,28 +49,21 @@ export function useLocalStorage<T>(
 
   // Reload state if key changes (e.g., when logging in/out to switch namespace keys)
   useEffect(() => {
-    try {
-      const item = localStorage.getItem(key);
-      setStoredValue(item ? (JSON.parse(item) as T) : initialValueRef.current);
-    } catch {
-      setStoredValue(initialValueRef.current);
-    }
+    const item = localStorage.getItem(key);
+    setStoredValue(item ? safeJsonParse<T>(item, initialValueRef.current) : initialValueRef.current);
   }, [key]);
 
   // Sync across tabs
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === key && e.newValue !== null) {
-        try {
-          setStoredValue(JSON.parse(e.newValue) as T);
-        } catch {
-          // ignore parse errors from other tabs
-        }
+        setStoredValue(safeJsonParse<T>(e.newValue, storedValue));
       }
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
-  }, [key]);
+  }, [key, storedValue]);
 
   return [storedValue, setValue];
 }
+

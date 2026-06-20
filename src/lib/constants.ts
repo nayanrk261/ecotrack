@@ -142,6 +142,11 @@ export const STORAGE_KEYS = {
   footprints: 'ecotrack_footprints',
   actions: 'ecotrack_completed_actions',
   lastCalculation: 'ecotrack_last_calculation',
+  currentUser: 'ecotrack_current_user',
+  users: 'ecotrack_users',
+  onboarded: 'ecotrack_onboarded',
+  pendingCalculation: 'ecotrack_pending_calculation',
+  locale: 'ecotrack_locale',
 } as const;
 
 // ===== Navigation Links =====
@@ -154,8 +159,74 @@ export const NAV_LINKS = [
   { path: '/learn', label: 'Learn' },
 ] as const;
 
+// ===== Routes =====
+export const ROUTES = {
+  home: '/',
+  calculator: '/calculator',
+  login: '/login',
+  dashboard: '/dashboard',
+  actions: '/actions',
+  insights: '/insights',
+  learn: '/learn',
+} as const;
+
+// ===== Category Names =====
+export const CATEGORY_NAMES = {
+  transport: 'Transport',
+  energy: 'Energy',
+  diet: 'Diet',
+  lifestyle: 'Lifestyle',
+  shopping: 'Shopping',
+  general: 'General',
+  all: 'All',
+} as const;
+
+// ===== Colors =====
+export const COLORS = {
+  primaryGreen: '#22c55e',
+  bgDark: '#09090b',
+  bgCard: '#18181b',
+  borderDark: '#27272a',
+  blueScore: '#3b82f6',
+  textLight: '#ffffff',
+  textMuted: '#a1a1aa',
+  textGray: '#71717a',
+  textPrimary: '#e4e4e7',
+  warningYellow: '#eab308',
+  dangerRed: '#ef4444',
+  successGreen: '#22c55e',
+  green400: '#4ade80',
+  emerald600: '#059669',
+  emerald700: '#047857',
+  purple500: '#a855f7',
+  zinc800: '#27272a',
+  zinc900: '#18181b',
+  zinc950: '#09090b',
+  chartTransport: '#3b82f6',
+  chartEnergy: '#f97316',
+  chartDiet: '#22c55e',
+  chartLifestyle: '#a855f7',
+  chartTransportBorder: '#2563eb',
+  chartEnergyBorder: '#ea580c',
+  chartDietBorder: '#16a34a',
+  chartLifestyleBorder: '#9333ea',
+  chartGrid: '#1a1a1a',
+  chartLineBorder: '#22c55e',
+  chartLineBg: 'rgba(34,197,94,0.1)',
+} as const;
+
+// ===== PDF Config =====
+export const PDF_CONFIG = {
+  a4WidthMm: 210,
+  a4HeightMm: 297,
+  scale: 2,
+  hiddenOffset: '-9999px',
+  tipLimit: 3,
+} as const;
+
 // ===== Calculation Constants =====
 export const DAYS_IN_MONTH = 30;
 export const MONTHS_IN_YEAR = 12;
 export const KG_IN_TON = 1000;
+
 

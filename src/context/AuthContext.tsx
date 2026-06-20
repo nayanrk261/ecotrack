@@ -2,6 +2,8 @@
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '../types';
+import { safeJsonParse } from '../lib/errorHandling';
+import { STORAGE_KEYS } from '../lib/constants';
 
 type RegisteredUser = User & { password?: string };
 
@@ -27,13 +29,8 @@ const AVATAR_GRADIENTS = [
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    try {
-      const activeSession = localStorage.getItem('ecotrack_current_user');
-      return activeSession ? (JSON.parse(activeSession) as User) : null;
-    } catch (e) {
-      console.error('Failed to load user session:', e);
-      return null;
-    }
+    const activeSession = localStorage.getItem(STORAGE_KEYS.currentUser);
+    return activeSession ? safeJsonParse<User | null>(activeSession, null) : null;
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,15 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await new Promise((resolve) => setTimeout(resolve, 400));
 
     try {
-      const registeredUsersRaw = localStorage.getItem('ecotrack_users');
-      let users: RegisteredUser[] = [];
-      if (registeredUsersRaw) {
-        try {
-          users = JSON.parse(registeredUsersRaw) as RegisteredUser[];
-        } catch {
-          users = [];
-        }
-      }
+      const registeredUsersRaw = localStorage.getItem(STORAGE_KEYS.users);
+      const users = registeredUsersRaw ? safeJsonParse<RegisteredUser[]>(registeredUsersRaw, []) : [];
       
       const foundUser = users.find(
         (u: RegisteredUser) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
@@ -68,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatarBg: foundUser.avatarBg,
       };
 
-      localStorage.setItem('ecotrack_current_user', JSON.stringify(userSession));
+      localStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(userSession));
       setUser(userSession);
     } finally {
       setIsLoading(false);
@@ -81,15 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await new Promise((resolve) => setTimeout(resolve, 400));
 
     try {
-      const registeredUsersRaw = localStorage.getItem('ecotrack_users');
-      let users: RegisteredUser[] = [];
-      if (registeredUsersRaw) {
-        try {
-          users = JSON.parse(registeredUsersRaw) as RegisteredUser[];
-        } catch {
-          users = [];
-        }
-      }
+      const registeredUsersRaw = localStorage.getItem(STORAGE_KEYS.users);
+      const users = registeredUsersRaw ? safeJsonParse<RegisteredUser[]>(registeredUsersRaw, []) : [];
 
       const emailExists = users.some((u: RegisteredUser) => u.email.toLowerCase() === email.toLowerCase());
       if (emailExists) {
@@ -107,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
 
       const updatedUsers = [...users, newUser];
-      localStorage.setItem('ecotrack_users', JSON.stringify(updatedUsers));
+      localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(updatedUsers));
 
       const userSession: User = {
         id: newUser.id,
@@ -116,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatarBg: newUser.avatarBg,
       };
 
-      localStorage.setItem('ecotrack_current_user', JSON.stringify(userSession));
+      localStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(userSession));
       setUser(userSession);
     } finally {
       setIsLoading(false);
@@ -124,9 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('ecotrack_current_user');
+    localStorage.removeItem(STORAGE_KEYS.currentUser);
     setUser(null);
   };
+
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>

@@ -1,77 +1,15 @@
-import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Sparkles,
-  Calculator,
-  ArrowLeft,
-  Leaf,
-  Share2,
-} from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Sparkles, Calculator, ArrowLeft, Leaf, Share2 } from 'lucide-react';
 
-import { useCarbon } from '../hooks/useCarbon';
-import type { InsightTip } from '../types';
 import { useLanguage } from '../context/LanguageContext';
-import { generateInsights } from '../lib/insights';
+import { useInsights } from '../hooks/useInsights';
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
-
-const getDifficultyColor = (difficulty: string): string => {
-  switch (difficulty) {
-    case 'Easy':
-      return '#22c55e';
-    case 'Medium':
-      return '#eab308';
-    case 'Hard':
-      return '#ef4444';
-    default:
-      return '#a1a1aa';
-  }
-};
+import { ROUTES, COLORS } from '../lib/constants';
 
 export default function Insights() {
-  const { latest } = useCarbon();
   const { locale, t } = useLanguage();
-
-  const tips: InsightTip[] = useMemo(() => {
-    if (!latest) return [];
-    return generateInsights(latest.result.breakdown, latest.result.totalMonthly);
-  }, [latest]);
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-      .then(() => {
-        toast.success(locale === 'en' ? 'Summary copied to clipboard!' : 'सारांश क्लिपबोर्ड पर कॉपी किया गया!');
-      })
-      .catch(() => {
-        toast.error(locale === 'en' ? 'Failed to copy to clipboard.' : 'क्लिपबोर्ड पर कॉपी करने में विफल।');
-      });
-  };
-
-  const handleShare = async () => {
-    if (!latest) return;
-    const footprint = latest.result.totalMonthly.toFixed(1);
-    const topTip = tips.length > 0 ? `"${tips[0].title}: ${tips[0].description}"` : 'Reduce your footprint!';
-    const shareText = `My carbon footprint is ${footprint} kg CO₂/month! Top tip: ${topTip} Check your footprint on EcoTrack!`;
-    const shareData = {
-      title: 'My EcoTrack Carbon Footprint',
-      text: shareText,
-      url: window.location.origin,
-    };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-        toast.success('Results shared successfully!');
-      } catch (e) {
-        if (e instanceof Error && e.name !== 'AbortError') {
-          copyToClipboard(shareText);
-        }
-      }
-    } else {
-      copyToClipboard(shareText);
-    }
-  };
+  const { latest, tips, handleShare } = useInsights();
 
   // ===== No data state =====
   if (!latest) {
@@ -84,7 +22,7 @@ export default function Insights() {
             <p className="empty-desc">
               {t('noDataDesc')}
             </p>
-            <Link to="/calculator" className="btn btn-primary btn-lg text-decoration-none">
+            <Link to={ROUTES.calculator} className="btn btn-primary btn-lg text-decoration-none">
               <Calculator size={20} />
               {t('calcFootprintBtn')}
             </Link>
@@ -167,7 +105,7 @@ export default function Insights() {
 
         {/* ===== Bottom Actions ===== */}
         <div className="insights-actions">
-          <Link to="/calculator" className="btn btn-outline text-decoration-none">
+          <Link to={ROUTES.calculator} className="btn btn-outline text-decoration-none">
             <ArrowLeft size={18} />
             {locale === 'en' ? 'Recalculate' : 'पुनः मापें'}
           </Link>
@@ -175,7 +113,7 @@ export default function Insights() {
             <Share2 size={18} />
             {t('shareResults')}
           </button>
-          <Link to="/actions" className="btn btn-primary text-decoration-none">
+          <Link to={ROUTES.actions} className="btn btn-primary text-decoration-none">
             <Sparkles size={18} />
             {locale === 'en' ? 'View Green Actions' : 'हरित एक्शन्स देखें'}
           </Link>
@@ -184,3 +122,17 @@ export default function Insights() {
     </div>
   );
 }
+
+function getDifficultyColor(difficulty: string): string {
+  switch (difficulty) {
+    case 'Easy':
+      return COLORS.successGreen;
+    case 'Medium':
+      return COLORS.warningYellow;
+    case 'Hard':
+      return COLORS.dangerRed;
+    default:
+      return COLORS.textMuted;
+  }
+}
+

@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import OnboardingModal from './components/OnboardingModal';
+import { STORAGE_KEYS, ROUTES } from './lib/constants';
 
 // ── Code-split page-level routes ─────────────────────────────────────────────
 // Each page is loaded on-demand, keeping the initial bundle small.
@@ -40,7 +41,7 @@ function PageLoadingSpinner() {
 export default function App() {
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => {
     try {
-      return !localStorage.getItem('ecotrack_onboarded');
+      return !localStorage.getItem(STORAGE_KEYS.onboarded);
     } catch {
       return false;
     }
@@ -71,11 +72,11 @@ export default function App() {
         <main id="main-content" className="main-content">
           <Suspense fallback={<PageLoadingSpinner />}>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/calculator" element={<Calculator />} />
-              <Route path="/login" element={<Auth />} />
+              <Route path={ROUTES.home} element={<Home />} />
+              <Route path={ROUTES.calculator} element={<Calculator />} />
+              <Route path={ROUTES.login} element={<Auth />} />
               <Route
-                path="/dashboard"
+                path={ROUTES.dashboard}
                 element={
                   <ProtectedRoute>
                     <Dashboard />
@@ -83,7 +84,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/actions"
+                path={ROUTES.actions}
                 element={
                   <ProtectedRoute>
                     <Actions />
@@ -91,18 +92,19 @@ export default function App() {
                 }
               />
               <Route
-                path="/insights"
+                path={ROUTES.insights}
                 element={
                   <ProtectedRoute>
                     <Insights />
                   </ProtectedRoute>
                 }
               />
-              <Route path="/learn" element={<Learn />} />
+              <Route path={ROUTES.learn} element={<Learn />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </main>
+
         <Footer />
         {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}
       </div>

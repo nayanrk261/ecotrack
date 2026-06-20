@@ -4,22 +4,10 @@
  * Manages form state, input validation, scoring execution, and persists results.
  */
 
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react';
-import toast from 'react-hot-toast';
 
-import { useCarbon } from '../hooks/useCarbon';
-import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { DEFAULT_TRANSPORT, DEFAULT_ENERGY, DEFAULT_DIET } from '../lib/constants';
-import type {
-  CalculatorFormData,
-  CarbonResult,
-  TransportData,
-  EnergyData,
-  DietData,
-} from '../types';
+import { useCalculator } from '../hooks/useCalculator';
 
 import Step1Transport from '../components/calculator/Step1Transport';
 import Step2Energy from '../components/calculator/Step2Energy';
@@ -27,82 +15,23 @@ import Step3Diet from '../components/calculator/Step3Diet';
 import Step4Results from '../components/calculator/Step4Results';
 
 export default function Calculator() {
-  const navigate = useNavigate();
   const { locale, t } = useLanguage();
-  const { calculate, saveResult } = useCarbon();
-  const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [saved, setSaved] = useState(false);
-
-  const localizedSteps = useMemo(() => [
-    t('stepTransport'),
-    t('stepEnergy'),
-    t('stepDiet'),
-    t('stepResults')
-  ], [t]);
-
-  // Form state (allow empty inputs while typing)
-  const [transport, setTransport] = useState<Omit<TransportData, 'shortHaulFlights' | 'longHaulFlights'> & { shortHaulFlights: number | ''; longHaulFlights: number | '' }>({
-    ...DEFAULT_TRANSPORT
-  });
-  const [energy, setEnergy] = useState<EnergyData>({ ...DEFAULT_ENERGY });
-  const [diet, setDiet] = useState<DietData>({ ...DEFAULT_DIET });
-
-  const formData: CalculatorFormData = useMemo(
-    () => ({
-      transport: {
-        ...transport,
-        shortHaulFlights: transport.shortHaulFlights === '' ? 0 : transport.shortHaulFlights,
-        longHaulFlights: transport.longHaulFlights === '' ? 0 : transport.longHaulFlights,
-      },
-      energy,
-      diet,
-    }),
-    [transport, energy, diet]
-  );
-
-  const result: CarbonResult = useMemo(() => calculate(formData), [formData, calculate]);
-
-  const handleNext = () => {
-    if (currentStep === 0) {
-      if (transport.shortHaulFlights === '') {
-        toast.error('Short-haul flights cannot be empty. Please enter a value (0 or more).');
-        return;
-      }
-      if (transport.shortHaulFlights < 0) {
-        toast.error('Short-haul flights cannot be negative.');
-        return;
-      }
-      if (transport.longHaulFlights === '') {
-        toast.error('Long-haul flights cannot be empty. Please enter a value (0 or more).');
-        return;
-      }
-      if (transport.longHaulFlights < 0) {
-        toast.error('Long-haul flights cannot be negative.');
-        return;
-      }
-    }
-    setCurrentStep((s) => Math.min(s + 1, 3));
-  };
-
-  const handleBack = () => setCurrentStep((s) => Math.max(s - 1, 0));
-
-  const handleSave = () => {
-    saveResult(formData, result);
-    setSaved(true);
-    if (user) {
-      toast.success('Results saved to your account!');
-    } else {
-      toast.success('Results saved to this device (Guest Mode)!');
-    }
-  };
-
-  const handleGetInsights = () => {
-    if (!saved) {
-      saveResult(formData, result);
-    }
-    navigate('/insights');
-  };
+  const {
+    currentStep,
+    saved,
+    transport,
+    setTransport,
+    energy,
+    setEnergy,
+    diet,
+    setDiet,
+    result,
+    handleNext,
+    handleBack,
+    handleSave,
+    handleGetInsights,
+    localizedSteps,
+  } = useCalculator();
 
   return (
     <div className="page-wrapper">
@@ -187,3 +116,4 @@ export default function Calculator() {
     </div>
   );
 }
+

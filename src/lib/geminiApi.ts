@@ -1,5 +1,7 @@
 import type { InsightTip, CarbonResult } from '../types';
 import { apiRequest } from './apiClient';
+import { safeJsonParse } from './errorHandling';
+
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
 
@@ -88,12 +90,14 @@ export async function getGeminiInsights(
   }
 
   const cleaned = stripMarkdown(rawText);
-  let tips: InsightTip[];
-  try {
-    tips = JSON.parse(cleaned) as InsightTip[];
-  } catch (e) {
-    throw new Error(`Failed to parse Gemini API response: ${e instanceof Error ? e.message : 'Invalid JSON format'}`, { cause: e });
-  }
+  const tips = safeJsonParse<InsightTip[]>(cleaned, (e) => {
+    throw new Error(
+      `Failed to parse Gemini API response: ${
+        e instanceof Error ? e.message : 'Invalid JSON format'
+      }`,
+      { cause: e }
+    );
+  });
 
   if (!Array.isArray(tips) || tips.length === 0) {
     throw new Error('Invalid response format from Gemini API');
@@ -101,4 +105,5 @@ export async function getGeminiInsights(
 
   return tips;
 }
+
 

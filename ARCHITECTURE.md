@@ -67,3 +67,41 @@ graph TD
 - Supports dynamic English (`en`) and Hindi (`hi`) toggles.
 - Language preferences are stored under the `ecotrack_locale` localStorage key.
 - Translation dictionaries translate labels, inputs, alerts, step guides, and navigation items. Internal engineering values and API prompt templates remain in English for reliability.
+
+---
+
+## 🧩 Code Architecture Conventions
+
+EcoTrack enforces a strict **hooks-based separation of concerns**. Every contributor must follow this contract:
+
+### The Rule: Logic in Hooks, Rendering in Components
+
+| Layer | Responsibility | Must NOT contain |
+|---|---|---|
+| **`/hooks`** | State, side-effects, business logic, data transformation | JSX, CSS classes, DOM references |
+| **`/pages`** | Component composition, JSX rendering, event delegation | `useState` for non-UI state, `useEffect` for data fetching |
+| **`/lib`** | Pure functions, calculations, API calls | React hooks, component state |
+| **`/context`** | Global cross-cutting state (auth, language) | Business logic beyond their domain |
+
+### Custom Hook Contract
+
+Every custom hook in `/hooks` must:
+1. **Export a named return type interface** (e.g., `UseCalculatorReturn`) — never rely on inferred return types.
+2. **Have a JSDoc comment** with `@returns` describing the interface.
+3. **Be named** with the `use` prefix and a domain noun (e.g., `useDashboardStats`, not `useDashboard`).
+4. **Delegate persistence** to `useLocalStorage` or `useCarbon` — hooks must not call `localStorage` directly (except `useCarbon` and `useLocalStorage` themselves).
+
+### Constants & Magic Values
+
+All magic strings and numbers must live in [`src/lib/constants.ts`](file:///c:/Users/windows/OneDrive/Desktop/PROJ/ecotrack/src/lib/constants.ts):
+- **Route paths** → `ROUTES`
+- **Storage keys** → `STORAGE_KEYS`
+- **Emission factors** → `EMISSION_FACTORS`
+- **Score thresholds** → `SCORE_THRESHOLDS`
+- **Color tokens** → `COLORS`
+- **PDF sizing** → `PDF_CONFIG`
+
+### Error Handling
+
+All JSON parsing must go through [`safeJsonParse`](file:///c:/Users/windows/OneDrive/Desktop/PROJ/ecotrack/src/lib/errorHandling.ts) — never use bare `JSON.parse`. This ensures corrupted localStorage data degrades gracefully with a typed fallback instead of throwing at runtime.
+

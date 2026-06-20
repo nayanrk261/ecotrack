@@ -10,11 +10,28 @@ import { calculateCarbonFootprint } from '../lib/carbonCalculations';
 import { STORAGE_KEYS, DEFAULT_TRANSPORT, DEFAULT_ENERGY, DEFAULT_DIET } from '../lib/constants';
 import type { CalculatorFormData, CarbonResult, SavedFootprint } from '../types';
 
+export interface UseCarbonReturn {
+  footprints: SavedFootprint[];
+  latest: SavedFootprint | null;
+  completedActions: string[];
+  defaultFormData: CalculatorFormData;
+  calculate: (formData: CalculatorFormData) => CarbonResult;
+  saveResult: (formData: CalculatorFormData, result: CarbonResult) => void;
+  toggleAction: (actionId: string) => void;
+  clearHistory: () => void;
+}
+
 /**
- * Central hook for carbon footprint state & calculations.
+ * Central hook for carbon footprint state and calculations.
+ * Manages per-user (or guest) footprint history and completed green actions in
+ * `localStorage`, exposing stable callbacks for mutation.
+ *
+ * @returns A {@link UseCarbonReturn} object containing footprint history, the latest
+ * entry, default form data, and mutation functions (calculate, saveResult, toggleAction, clearHistory).
  */
-export function useCarbon() {
+export function useCarbon(): UseCarbonReturn {
   const { user } = useAuth();
+
 
   const footprintsKey = user ? `ecotrack_footprints_${user.id}` : STORAGE_KEYS.footprints;
   const actionsKey = user ? `ecotrack_completed_actions_${user.id}` : STORAGE_KEYS.actions;
