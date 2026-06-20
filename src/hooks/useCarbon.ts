@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useLocalStorage } from './useLocalStorage';
+import { useAuth } from '../context/AuthContext';
 import { calculateCarbonFootprint } from '../lib/carbonCalculations';
 import { STORAGE_KEYS, DEFAULT_TRANSPORT, DEFAULT_ENERGY, DEFAULT_DIET } from '../lib/constants';
 import type { CalculatorFormData, CarbonResult, SavedFootprint } from '../types';
@@ -8,13 +9,18 @@ import type { CalculatorFormData, CarbonResult, SavedFootprint } from '../types'
  * Central hook for carbon footprint state & calculations.
  */
 export function useCarbon() {
+  const { user } = useAuth();
+
+  const footprintsKey = user ? `ecotrack_footprints_${user.id}` : STORAGE_KEYS.footprints;
+  const actionsKey = user ? `ecotrack_completed_actions_${user.id}` : STORAGE_KEYS.actions;
+
   const [footprints, setFootprints] = useLocalStorage<SavedFootprint[]>(
-    STORAGE_KEYS.footprints,
+    footprintsKey,
     []
   );
 
   const [completedActions, setCompletedActions] = useLocalStorage<string[]>(
-    STORAGE_KEYS.actions,
+    actionsKey,
     []
   );
 

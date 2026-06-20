@@ -6,7 +6,10 @@ const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 /**
- * Build the system prompt with carbon data
+ * Build the system prompt populated with user's carbon footprint data.
+ *
+ * @param result - The user's carbon calculation result.
+ * @returns The formatted string prompt for the Gemini model.
  */
 function buildPrompt(result: CarbonResult): string {
   return `You are a carbon footprint reduction expert. Analyze the following carbon footprint data and respond with ONLY a valid JSON array (no markdown, no explanation) containing exactly 5 objects with this structure: [{"title": "string", "description": "string", "co2Savings": number, "difficulty": "Easy|Medium|Hard", "category": "Transport|Energy|Diet|Shopping|General", "icon": "emoji"}] where co2Savings is a number in kg per year.
@@ -22,7 +25,10 @@ User's carbon footprint data:
 }
 
 /**
- * Strip markdown code fences from API response
+ * Strip markdown code fences (like ```json ... ```) from a text response.
+ *
+ * @param text - The raw text containing code fences.
+ * @returns The cleaned text content.
  */
 function stripMarkdown(text: string): string {
   return text
@@ -32,7 +38,12 @@ function stripMarkdown(text: string): string {
 }
 
 /**
- * Fetch personalized tips from Google Gemini API
+ * Fetch personalized tips from Google Gemini API.
+ * Uses the user's carbon footprint data to query the API and receive structured advice.
+ *
+ * @param result - The user's carbon footprint result.
+ * @returns A promise resolving to an array of InsightTip objects.
+ * @throws Error if the API key is missing, the response is not OK, the response is empty, or JSON parsing fails.
  */
 export async function getGeminiInsights(
   result: CarbonResult
@@ -74,7 +85,12 @@ export async function getGeminiInsights(
   }
 
   const cleaned = stripMarkdown(rawText);
-  const tips: InsightTip[] = JSON.parse(cleaned);
+  let tips: InsightTip[];
+  try {
+    tips = JSON.parse(cleaned) as InsightTip[];
+  } catch (e) {
+    throw new Error(`Failed to parse Gemini API response: ${e instanceof Error ? e.message : 'Invalid JSON format'}`, { cause: e });
+  }
 
   if (!Array.isArray(tips) || tips.length === 0) {
     throw new Error('Invalid response format from Gemini API');
@@ -82,3 +98,4 @@ export async function getGeminiInsights(
 
   return tips;
 }
+

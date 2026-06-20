@@ -148,3 +148,9 @@ export const NAV_LINKS = [
   { path: '/insights', label: 'Insights' },
   { path: '/learn', label: 'Learn' },
 ] as const;
+
+// ===== Calculation Constants =====
+export const DAYS_IN_MONTH = 30;
+export const MONTHS_IN_YEAR = 12;
+export const KG_IN_TON = 1000;
+

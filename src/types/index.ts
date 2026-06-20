@@ -96,3 +96,12 @@ export interface EmissionSource {
   value: number;
   color: string;
 }
+
+// ===== Authentication =====
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatarBg: string; // Gradient Tailwind class or styling value
+}
+

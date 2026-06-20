@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 /**
  * Custom hook for syncing React state with localStorage.
@@ -8,6 +8,13 @@ export function useLocalStorage<T>(
   key: string,
   initialValue: T
 ): [T, (value: T | ((prev: T) => T)) => void] {
+  const initialValueRef = useRef(initialValue);
+  
+  // Keep the ref up-to-date in case initialValue actually changes
+  useEffect(() => {
+    initialValueRef.current = initialValue;
+  }, [initialValue]);
+
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = localStorage.getItem(key);
@@ -31,6 +38,16 @@ export function useLocalStorage<T>(
     },
     [key]
   );
+
+  // Reload state if key changes (e.g., when logging in/out to switch namespace keys)
+  useEffect(() => {
+    try {
+      const item = localStorage.getItem(key);
+      setStoredValue(item ? (JSON.parse(item) as T) : initialValueRef.current);
+    } catch {
+      setStoredValue(initialValueRef.current);
+    }
+  }, [key]);
 
   // Sync across tabs
   useEffect(() => {

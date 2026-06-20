@@ -1804,3 +1804,77 @@
     transform: translateY(0);
   }
 }
+
+/* ===== Accessibility - Keyboard Focus Indicators ===== */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--color-green-light) !important;
+  outline-offset: 2px !important;
+}
+
+/* ===== Print Layout Styles ===== */
+@media print {
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  .navbar,
+  .footer,
+  .calc-nav,
+  .insights-actions,
+  .settings-card,
+  button,
+  .filter-tabs,
+  .btn,
+  .empty-state {
+    display: none !important;
+  }
+  
+  .page-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: none !important;
+  }
+  
+  .card {
+    background: #ffffff !important;
+    border: 1px solid #e4e4e7 !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+  
+  .text-gradient {
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+    color: #16a34a !important;
+    font-weight: bold;
+  }
+  
+  .score-card {
+    border: 2px solid #16a34a !important;
+    background: #f0fdf4 !important;
+    color: #14532d !important;
+  }
+  
+  .stat-card-value {
+    color: #000000 !important;
+  }
+  
+  .table-badge {
+    background: none !important;
+    border: 1px solid #e4e4e7 !important;
+    color: #000000 !important;
+  }
+  
+  .chart-container {
+    height: 250px !important;
+    max-height: 250px !important;
+  }
+}
+

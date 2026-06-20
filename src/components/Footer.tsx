@@ -59,8 +59,14 @@ export default function Footer() {
         <div className="footer-bottom">
           <p className="footer-copyright">
             © {new Date().getFullYear()} EcoTrack. Built with{' '}
-            <Heart size={14} className="inline-icon heart-icon" /> for the planet.
+            <Heart size={14} className="inline-icon heart-icon" aria-hidden="true" /> for the planet.
           </p>
+          
+          <div className="flex items-center gap-1.5 justify-center py-1.5 px-3 bg-zinc-900/60 rounded-full border border-zinc-800 text-[11px] text-zinc-400 font-semibold shadow-sm select-none">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+            <span>Guest Mode — Your data stays on this device</span>
+          </div>
+
           <div className="footer-social">
             <a
               href="https://github.com"

@@ -12,9 +12,11 @@ import {
   Leaf,
   TreePine,
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Home() {
   const [co2Counter, setCo2Counter] = useState(422.04);
+  const { locale, t } = useLanguage();
 
   // Animated CO₂ counter
   useEffect(() => {
@@ -35,33 +37,31 @@ export default function Home() {
         <div className="container hero-container">
           <div className="hero-badge">
             <Leaf size={14} />
-            <span>Carbon Footprint Awareness Platform</span>
+            <span>{locale === 'en' ? 'Carbon Footprint Awareness Platform' : 'कार्बन फुटप्रिंट जागरूकता मंच'}</span>
           </div>
           <h1 className="hero-title">
-            Track Your{' '}
-            <span className="text-gradient">Carbon Footprint</span>
+            {t('homeTitle')}
           </h1>
           <p className="hero-subtitle">
-            Understand your environmental impact, get personalized AI-powered
-            insights, and take meaningful action to reduce your carbon emissions.
+            {t('homeSubtitle')}
           </p>
 
           {/* CO₂ Counter */}
           <div className="co2-counter-card">
-            <span className="co2-label">Atmospheric CO₂ (ppm)</span>
+            <span className="co2-label">{locale === 'en' ? 'Atmospheric CO₂ (ppm)' : 'वायुमंडलीय CO₂ (ppm)'}</span>
             <span className="co2-value">{co2Counter.toFixed(4)}</span>
-            <span className="co2-sublabel">and rising every second…</span>
+            <span className="co2-sublabel">{locale === 'en' ? 'and rising every second…' : 'और हर सेकंड बढ़ रहा है…'}</span>
           </div>
 
           {/* CTA Buttons */}
           <div className="hero-cta-group">
-            <Link to="/calculator" className="btn btn-primary btn-lg">
+            <Link to="/calculator" className="btn btn-primary btn-lg text-decoration-none">
               <Calculator size={20} />
-              Calculate Now
+              {t('startCalculating')}
             </Link>
-            <Link to="/dashboard" className="btn btn-outline btn-lg">
+            <Link to="/dashboard" className="btn btn-outline btn-lg text-decoration-none">
               <BarChart3 size={20} />
-              View Dashboard
+              {t('viewDashboard')}
             </Link>
           </div>
         </div>
@@ -174,7 +174,7 @@ export default function Home() {
               {
                 icon: <Shield size={24} />,
                 title: 'Private & Secure',
-                desc: 'All data stays in your browser. No account needed, no data shared.',
+                desc: 'Create an account to securely save your carbon records and sync statistics across sessions.',
               },
             ].map((feature) => (
               <div key={feature.title} className="feature-card">
@@ -196,14 +196,14 @@ export default function Home() {
           <div className="cta-card">
             <div className="cta-glow" />
             <h2 className="cta-title">
-              Ready to Make a <span className="text-gradient">Difference</span>?
+              {locale === 'en' ? 'Ready to Make a ' : 'क्या आप बदलाव के लिए '}<span className="text-gradient">{locale === 'en' ? 'Difference' : 'तैयार'}</span>{locale === 'en' ? '?' : ' हैं?'}
             </h2>
             <p className="cta-subtitle">
-              Start by calculating your carbon footprint. It only takes 2 minutes.
+              {locale === 'en' ? 'Start by calculating your carbon footprint. It only takes 2 minutes.' : 'अपने कार्बन फुटप्रिंट की गणना करके शुरुआत करें। इसमें केवल 2 मिनट लगते हैं।'}
             </p>
-            <Link to="/calculator" className="btn btn-primary btn-lg">
+            <Link to="/calculator" className="btn btn-primary btn-lg text-decoration-none">
               <Calculator size={20} />
-              Get Started Now
+              {t('calcFootprintBtn')}
               <ArrowRight size={20} />
             </Link>
           </div>

@@ -4,25 +4,33 @@ import type {
   CarbonScore,
   CategoryBreakdown,
 } from '../types';
-import { EMISSION_FACTORS, SCORE_THRESHOLDS } from './constants';
+import { EMISSION_FACTORS, SCORE_THRESHOLDS, DAYS_IN_MONTH, MONTHS_IN_YEAR, KG_IN_TON } from './constants';
 
 /**
- * Calculate monthly transport emissions in kg CO₂
+ * Calculate monthly transport emissions in kg CO₂.
+ * Uses emission factors per km for commute modes and standard estimates for flights.
+ *
+ * @param data - The transport data containing commute mode, daily distance, short-haul, and long-haul flights.
+ * @returns The total monthly transport emissions in kg CO₂.
  */
 function calculateTransport(data: CalculatorFormData['transport']): number {
   const commuteEmission =
-    EMISSION_FACTORS.transport[data.commuteMode] * data.dailyDistance * 30;
+    EMISSION_FACTORS.transport[data.commuteMode] * data.dailyDistance * DAYS_IN_MONTH;
 
   const flightEmission =
     (data.shortHaulFlights * EMISSION_FACTORS.flights.shortHaul +
       data.longHaulFlights * EMISSION_FACTORS.flights.longHaul) /
-    12;
+    MONTHS_IN_YEAR;
 
   return commuteEmission + flightEmission;
 }
 
 /**
- * Calculate monthly energy emissions in kg CO₂
+ * Calculate monthly energy emissions in kg CO₂.
+ * Accounts for electricity consumption divided by household size, plus cooking fuel factors.
+ *
+ * @param data - The energy data containing monthly electricity, cooking fuel, and household size.
+ * @returns The total monthly energy emissions in kg CO₂.
  */
 function calculateEnergy(data: CalculatorFormData['energy']): number {
   const electricityEmission =
@@ -35,14 +43,22 @@ function calculateEnergy(data: CalculatorFormData['energy']): number {
 }
 
 /**
- * Calculate monthly diet emissions in kg CO₂
+ * Calculate monthly diet emissions in kg CO₂.
+ * Based on the carbon footprint of dietary choices (vegan, vegetarian, etc.).
+ *
+ * @param data - The diet data containing diet type.
+ * @returns The monthly diet emissions in kg CO₂.
  */
 function calculateDiet(data: CalculatorFormData['diet']): number {
   return EMISSION_FACTORS.diet[data.dietType];
 }
 
 /**
- * Calculate monthly lifestyle emissions in kg CO₂
+ * Calculate monthly lifestyle emissions in kg CO₂.
+ * Sums up emissions from online orders and clothing purchases.
+ *
+ * @param data - The diet and lifestyle data containing online orders and new clothes.
+ * @returns The monthly lifestyle emissions in kg CO₂.
  */
 function calculateLifestyle(data: CalculatorFormData['diet']): number {
   return (
@@ -52,7 +68,10 @@ function calculateLifestyle(data: CalculatorFormData['diet']): number {
 }
 
 /**
- * Determine carbon score based on monthly total
+ * Determine the carbon score rating based on the total monthly emissions.
+ *
+ * @param monthlyKg - The total monthly emissions in kg CO₂.
+ * @returns The CarbonScore string representing rating tier ('Eco Warrior', 'Green Learner', etc.).
  */
 function getCarbonScore(monthlyKg: number): CarbonScore {
   if (monthlyKg < SCORE_THRESHOLDS.ecoWarrior) return 'Eco Warrior';
@@ -62,7 +81,11 @@ function getCarbonScore(monthlyKg: number): CarbonScore {
 }
 
 /**
- * Main calculation function — returns full result from form data
+ * Main calculation function — returns full carbon result from complete form data.
+ * Computes monthly totals for transport, energy, diet, and lifestyle, and calculates the annual total in tons.
+ *
+ * @param formData - The complete calculator form data.
+ * @returns The CarbonResult containing monthly totals, annual tons, breakdown, and score.
  */
 export function calculateCarbonFootprint(
   formData: CalculatorFormData
@@ -75,7 +98,7 @@ export function calculateCarbonFootprint(
   const breakdown: CategoryBreakdown = { transport, energy, diet, lifestyle };
   const totalMonthly =
     Math.round((transport + energy + diet + lifestyle) * 100) / 100;
-  const totalAnnual = Math.round((totalMonthly * 12) / 100) / 10; // in tons
+  const totalAnnual = Math.round((totalMonthly * MONTHS_IN_YEAR / KG_IN_TON) * 10) / 10; // in tons, rounded to 1 decimal place
 
   return {
     totalMonthly,
@@ -86,7 +109,10 @@ export function calculateCarbonFootprint(
 }
 
 /**
- * Get score emoji for display
+ * Get score emoji for display based on the rating tier.
+ *
+ * @param score - The CarbonScore rating.
+ * @returns A string containing the appropriate emoji icon.
  */
 export function getScoreEmoji(score: CarbonScore): string {
   switch (score) {
@@ -102,7 +128,10 @@ export function getScoreEmoji(score: CarbonScore): string {
 }
 
 /**
- * Get score color class
+ * Get score hex color value based on the rating tier.
+ *
+ * @param score - The CarbonScore rating.
+ * @returns A string containing the hex color code.
  */
 export function getScoreColor(score: CarbonScore): string {
   switch (score) {
@@ -116,3 +145,4 @@ export function getScoreColor(score: CarbonScore): string {
       return '#ef4444';
   }
 }
+

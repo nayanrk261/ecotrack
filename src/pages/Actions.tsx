@@ -7,6 +7,7 @@ import { useCarbon } from '../hooks/useCarbon';
 import { GREEN_ACTIONS } from '../lib/constants';
 import ProgressBar from '../components/ProgressBar';
 import type { ActionCategory } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 const CATEGORIES: (ActionCategory | 'All')[] = [
   'All',
@@ -18,6 +19,7 @@ const CATEGORIES: (ActionCategory | 'All')[] = [
 
 export default function Actions() {
   const { completedActions, toggleAction } = useCarbon();
+  const { locale, t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState<ActionCategory | 'All'>('All');
 
   const filtered = useMemo(
@@ -45,7 +47,11 @@ export default function Actions() {
     toggleAction(actionId);
 
     if (!wasCompleted) {
-      toast.success(`+${action.co2Savings} kg CO₂/year saved!`);
+      toast.success(
+        locale === 'en'
+          ? `+${action.co2Savings} kg CO₂/year saved!`
+          : `+${action.co2Savings} किग्रा CO₂/वर्ष की बचत सहेजी गई!`
+      );
 
       // Check if category completed
       const categoryActions = GREEN_ACTIONS.filter(
@@ -62,8 +68,11 @@ export default function Actions() {
           origin: { y: 0.6 },
           colors: ['#22c55e', '#4ade80', '#86efac', '#16a34a'],
         });
+        const localizedCat = t(action.category.toLowerCase() as 'transport' | 'energy' | 'diet' | 'lifestyle');
         toast.success(
-          `🎉 ${action.category} category complete! Amazing work!`,
+          locale === 'en'
+            ? `🎉 ${action.category} category complete! Amazing work!`
+            : `🎉 ${localizedCat} श्रेणी पूर्ण! अद्भुत कार्य!`,
           { duration: 4000 }
         );
       }
@@ -74,10 +83,10 @@ export default function Actions() {
     <div className="page-wrapper">
       <div className="container">
         <h1 className="page-title">
-          Green <span className="text-gradient">Actions</span>
+          {locale === 'en' ? 'Green ' : 'हरित '}<span className="text-gradient">{t('actions')}</span>
         </h1>
         <p className="page-subtitle">
-          Complete these actions to reduce your carbon footprint
+          {t('actionsSubtitle')}
         </p>
 
         {/* ===== Overall Progress ===== */}
@@ -87,21 +96,21 @@ export default function Actions() {
               <Trophy size={24} className="icon-green" />
               <div>
                 <div className="summary-value">{completedActions.length}/{GREEN_ACTIONS.length}</div>
-                <div className="summary-label">Actions Completed</div>
+                <div className="summary-label">{t('completedCount')}</div>
               </div>
             </div>
             <div className="summary-stat">
               <Sparkles size={24} className="icon-green" />
               <div>
                 <div className="summary-value">{totalSaved.toLocaleString()} kg</div>
-                <div className="summary-label">CO₂ Saved/Year</div>
+                <div className="summary-label">{locale === 'en' ? 'CO₂ Saved/Year' : 'CO₂ वार्षिक बचत'}</div>
               </div>
             </div>
           </div>
           <ProgressBar
             current={completedActions.length}
             total={GREEN_ACTIONS.length}
-            label="Overall Progress"
+            label={locale === 'en' ? 'Overall Progress' : 'कुल प्रगति'}
           />
         </div>
 
@@ -114,7 +123,7 @@ export default function Actions() {
               className={`filter-tab ${activeCategory === cat ? 'filter-tab-active' : ''}`}
               onClick={() => setActiveCategory(cat)}
             >
-              {cat}
+              {cat === 'All' ? (locale === 'en' ? 'All' : 'सभी') : t(cat.toLowerCase() as 'transport' | 'energy' | 'diet' | 'lifestyle')}
               {cat !== 'All' && (
                 <span className="filter-count">
                   {GREEN_ACTIONS.filter(
@@ -159,9 +168,9 @@ export default function Actions() {
                 <p className="action-desc">{action.description}</p>
                 <div className="action-footer">
                   <span className="action-savings">
-                    -{action.co2Savings} kg CO₂/yr
+                    -{action.co2Savings} {locale === 'en' ? 'kg CO₂/yr' : 'किग्रा CO₂/वर्ष'}
                   </span>
-                  <span className="action-category-tag">{action.category}</span>
+                  <span className="action-category-tag">{t(action.category.toLowerCase() as 'transport' | 'energy' | 'diet' | 'lifestyle')}</span>
                 </div>
               </div>
             );
