@@ -10,13 +10,25 @@
 
 ---
 
-## 🎯 Chosen Vertical & Mission
+## Chosen Vertical: Individual Carbon Footprint Tracking
 
-### Carbon Footprint Awareness for Individuals
-Climate change is a global systemic challenge, but systemic change is driven by individual awareness and action. EcoTrack addresses this directly:
-- **Low Barriers to Entry (Guest Mode)**: No account setup, passwords, or authentication walls. Users can measure their impact instantly.
-- **Privacy-First Data Storage**: All calculations and completed habits reside strictly in the user's browser `localStorage`, ensuring complete data ownership.
-- **Actionable Growth**: Provides a feedback loop of calculating scores, getting AI-generated tips, and building green habits via the Actions list.
+> EcoTrack addresses the **Individual Environmental Awareness** vertical by giving everyday people — not enterprises or governments — a fast, private, and engaging tool to measure, understand, and reduce their personal carbon footprint.
+
+### Problem Statement
+Most individuals in India have no clear picture of their daily emissions contribution. Generic awareness campaigns don't translate to actionable personal data. EcoTrack fills this gap with a **calculator-first, privacy-first** approach tailored to Indian lifestyles and regional emission factors.
+
+### Why This Solution
+
+| Feature | Personal Impact Goal |
+|---|---|
+| **Multi-step Carbon Calculator** | Surfaces individual emission hotspots (transport, diet, energy) in < 2 minutes — no signup barrier |
+| **Carbon Score Tiers** (Eco Warrior → Carbon Heavy) | Provides immediate, motivating feedback so users see where they stand against India & global benchmarks |
+| **AI Insights (Gemini API)** | Turns raw numbers into personalised action advice specific to that user's profile |
+| **Green Actions Tracker** | Creates a daily habit-formation loop — 20+ concrete actions with tracked annual CO₂ savings |
+| **Dashboard Trend Charts** | Shows monthly progress over time, making reduction tangible and encouraging repeat engagement |
+| **Hindi / English Toggle** | Lowers language barriers so rural and semi-urban Indian users can engage in their preferred language |
+| **Guest / localStorage Mode** | Zero friction — no account creation, no data upload, GDPR-safe by design |
+| **Friends Leaderboard** | Social proof and gentle competition motivates sustained behaviour change |
 
 ---
 
@@ -173,6 +185,11 @@ npm run test
 ### Run Tests in Watch Mode
 ```bash
 npm run test:watch
+```
+
+### Generate Code Coverage Report
+```bash
+npm run test:coverage
 ```
 
 ### Build & Validate Compilation

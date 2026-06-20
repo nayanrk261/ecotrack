@@ -1,3 +1,8 @@
+/**
+ * @file constants.ts
+ * @description Central store for emission factors, averages, score thresholds, seed lists, and configuration settings.
+ */
+
 import type { GreenAction, EmissionSource, QuickTip, KeyFact } from '../types';
 
 // ===== Emission Factors =====

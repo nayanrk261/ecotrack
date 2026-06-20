@@ -1,3 +1,8 @@
+/**
+ * @file localStorage.ts
+ * @description Safe browser local storage API wrapper functions with parsed fallback protection.
+ */
+
 import { STORAGE_KEYS } from './constants';
 import type { SavedFootprint } from '../types';
 

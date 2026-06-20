@@ -1,3 +1,8 @@
+/**
+ * @file useLocalStorage.ts
+ * @description Custom React hook establishing synchronized binding between React state and browser local storage.
+ */
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 /**

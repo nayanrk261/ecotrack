@@ -35,9 +35,13 @@ export default function Navbar() {
     };
   }, [dropdownOpen]);
 
+  const handleToggleLanguage = () => {
+    toggleLanguage();
+  };
+
   const langToggleBtn = (
     <button
-      onClick={toggleLanguage}
+      onClick={handleToggleLanguage}
       className="flex items-center gap-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 py-1.5 px-3 rounded-full cursor-pointer text-xs font-bold text-zinc-300 transition-all active:scale-[0.98] select-none"
       aria-label="Change Language / भाषा बदलें"
     >

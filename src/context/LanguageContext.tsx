@@ -237,6 +237,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error('Failed to save language setting:', e);
     }
+    // Keep the <html lang="…"> attribute in sync for screen-readers & SEO
+    document.documentElement.lang = locale;
   }, [locale]);
 
   const toggleLanguage = () => {

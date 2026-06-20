@@ -13,6 +13,8 @@ import { useCarbon } from '../hooks/useCarbon';
 import type { InsightTip } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { generateInsights } from '../lib/insights';
+import { Card } from '../components/Card';
+import { Badge } from '../components/Badge';
 
 const getDifficultyColor = (difficulty: string): string => {
   switch (difficulty) {
@@ -106,7 +108,7 @@ export default function Insights() {
         </p>
 
         {/* ===== Summary Card ===== */}
-        <div className="card insights-summary">
+        <Card className="insights-summary">
           <div className="insights-summary-inner">
             <Leaf size={24} className="icon-green" />
             <div>
@@ -129,17 +131,16 @@ export default function Insights() {
               )}
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* ===== Tips ===== */}
         <div className="insights-grid">
           {tips.map((tip, i) => (
-            <div key={i} className="card insight-card fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+            <Card key={i} className="insight-card fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
               <div className="insight-header">
                 <span className="insight-emoji">{tip.icon}</span>
                 <div className="insight-badges">
-                  <span
-                    className="badge"
+                  <Badge
                     style={{
                       backgroundColor: getDifficultyColor(tip.difficulty) + '20',
                       color: getDifficultyColor(tip.difficulty),
@@ -147,8 +148,8 @@ export default function Insights() {
                     }}
                   >
                     {tip.difficulty === 'Easy' ? (locale === 'en' ? 'Easy' : 'आसान') : tip.difficulty === 'Medium' ? (locale === 'en' ? 'Medium' : 'मध्यम') : (locale === 'en' ? 'Hard' : 'कठिन')}
-                  </span>
-                  <span className="badge badge-category">{t(tip.category.toLowerCase() as 'transport' | 'energy' | 'diet' | 'lifestyle' | 'shopping' | 'general')}</span>
+                  </Badge>
+                  <Badge className="badge-category">{t(tip.category.toLowerCase() as 'transport' | 'energy' | 'diet' | 'lifestyle' | 'shopping' | 'general')}</Badge>
                 </div>
               </div>
               <h3 className="insight-title">{tip.title}</h3>
@@ -160,7 +161,7 @@ export default function Insights() {
                   </span>
                 </div>
               )}
-            </div>
+            </Card>
           ))}
         </div>
 

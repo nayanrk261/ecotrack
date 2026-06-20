@@ -1,3 +1,8 @@
+/**
+ * @file useCarbon.ts
+ * @description Custom React hook managing local/user carbon calculations history state and storage sync triggers.
+ */
+
 import { useMemo } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { useAuth } from '../context/AuthContext';
@@ -57,6 +62,13 @@ export function useCarbon() {
     );
   }
 
+  function clearHistory(): void {
+    setFootprints([]);
+    setCompletedActions([]);
+    localStorage.removeItem(footprintsKey);
+    localStorage.removeItem(actionsKey);
+  }
+
   return {
     footprints,
     latest,
@@ -65,5 +77,6 @@ export function useCarbon() {
     calculate,
     saveResult,
     toggleAction,
+    clearHistory,
   };
 }

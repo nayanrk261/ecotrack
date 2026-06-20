@@ -1,3 +1,8 @@
+/**
+ * @file carbonCalculations.ts
+ * @description Mathematics calculations for calculating transport, energy, diet, and lifestyle carbon emissions using coefficients.
+ */
+
 import type {
   CalculatorFormData,
   CarbonResult,

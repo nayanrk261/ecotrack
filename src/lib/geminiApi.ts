@@ -1,6 +1,17 @@
 import type { InsightTip, CarbonResult } from '../types';
+import { apiRequest } from './apiClient';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+
+interface GeminiApiResponse {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string;
+      }>;
+    };
+  }>;
+}
 
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
@@ -54,9 +65,8 @@ export async function getGeminiInsights(
     );
   }
 
-  const response = await fetch(`${GEMINI_URL}?key=${API_KEY}`, {
+  const data = await apiRequest<GeminiApiResponse>(`${GEMINI_URL}?key=${API_KEY}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [
         {
@@ -69,13 +79,6 @@ export async function getGeminiInsights(
       },
     }),
   });
-
-  if (!response.ok) {
-    const errBody = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${errBody}`);
-  }
-
-  const data = await response.json();
 
   const rawText: string =
     data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';

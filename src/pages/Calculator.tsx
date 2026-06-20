@@ -1,46 +1,19 @@
+/**
+ * @file Calculator.tsx
+ * @description Orchestrates the 4-step carbon footprint calculation form flow.
+ * Manages form state, input validation, scoring execution, and persists results.
+ */
+
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Car,
-  Bike,
-  Bus,
-  TrainFront,
-  Footprints,
-  Plane,
-  Zap,
-  Flame,
-  Users,
-  Salad,
-  ShoppingBag,
-  Shirt,
-  ArrowRight,
-  ArrowLeft,
-  Save,
-  Sparkles,
-  CheckCircle2,
-  BarChart3,
-} from 'lucide-react';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { Doughnut, Bar } from 'react-chartjs-2';
+import { CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { useCarbon } from '../hooks/useCarbon';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { getScoreEmoji, getScoreColor } from '../lib/carbonCalculations';
-import { AVERAGES, DEFAULT_TRANSPORT, DEFAULT_ENERGY, DEFAULT_DIET } from '../lib/constants';
+import { DEFAULT_TRANSPORT, DEFAULT_ENERGY, DEFAULT_DIET } from '../lib/constants';
 import type {
-  CommuteMode,
-  CookingFuel,
-  DietType,
   CalculatorFormData,
   CarbonResult,
   TransportData,
@@ -48,7 +21,10 @@ import type {
   DietData,
 } from '../types';
 
-ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+import Step1Transport from '../components/calculator/Step1Transport';
+import Step2Energy from '../components/calculator/Step2Energy';
+import Step3Diet from '../components/calculator/Step3Diet';
+import Step4Results from '../components/calculator/Step4Results';
 
 export default function Calculator() {
   const navigate = useNavigate();
@@ -108,6 +84,7 @@ export default function Calculator() {
     }
     setCurrentStep((s) => Math.min(s + 1, 3));
   };
+
   const handleBack = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
   const handleSave = () => {
@@ -125,81 +102,6 @@ export default function Calculator() {
       saveResult(formData, result);
     }
     navigate('/insights');
-  };
-
-  // ===== Commute mode options =====
-  const commuteModes: { value: CommuteMode; label: string; icon: React.ReactNode }[] = [
-    { value: 'car', label: locale === 'en' ? 'Car' : 'कार', icon: <Car size={20} /> },
-    { value: 'bike', label: locale === 'en' ? 'Bike' : 'बाइक', icon: <Bike size={20} /> },
-    { value: 'bus', label: locale === 'en' ? 'Bus' : 'बस', icon: <Bus size={20} /> },
-    { value: 'train', label: locale === 'en' ? 'Train' : 'ट्रेन', icon: <TrainFront size={20} /> },
-    { value: 'walk', label: locale === 'en' ? 'Walk' : 'पैदल', icon: <Footprints size={20} /> },
-  ];
-
-  const cookingFuels: { value: CookingFuel; label: string }[] = [
-    { value: 'lpg', label: 'LPG' },
-    { value: 'png', label: 'PNG' },
-    { value: 'electric', label: locale === 'en' ? 'Electric' : 'बिजली' },
-    { value: 'induction', label: locale === 'en' ? 'Induction' : 'इंडक्शन' },
-  ];
-
-  const dietTypes: { value: DietType; label: string; emoji: string }[] = [
-    { value: 'vegan', label: locale === 'en' ? 'Vegan' : 'शाकाहारी (Vegan)', emoji: '🌱' },
-    { value: 'vegetarian', label: locale === 'en' ? 'Vegetarian' : 'शुद्ध शाकाहारी', emoji: '🥬' },
-    { value: 'eggetarian', label: locale === 'en' ? 'Eggetarian' : 'अंडाहारी', emoji: '🥚' },
-    { value: 'non-veg', label: locale === 'en' ? 'Non-Veg' : 'मांसाहारी', emoji: '🍗' },
-  ];
-
-  // ===== Chart data =====
-  const doughnutData = {
-    labels: [t('transport'), t('energy'), t('diet'), t('lifestyle')],
-    datasets: [
-      {
-        data: [
-          result.breakdown.transport,
-          result.breakdown.energy,
-          result.breakdown.diet,
-          result.breakdown.lifestyle,
-        ],
-        backgroundColor: ['#3b82f6', '#f97316', '#22c55e', '#a855f7'],
-        borderColor: ['#2563eb', '#ea580c', '#16a34a', '#9333ea'],
-        borderWidth: 2,
-        hoverOffset: 8,
-      },
-    ],
-  };
-
-  const barData = {
-    labels: [
-      locale === 'en' ? 'Your Footprint' : 'आपका फुटप्रिंट',
-      locale === 'en' ? 'India Avg' : 'भारत औसत',
-      locale === 'en' ? 'Global Avg' : 'वैश्विक औसत',
-    ],
-    datasets: [
-      {
-        label: locale === 'en' ? 'kg CO₂/month' : 'किग्रा CO₂/माह',
-        data: [result.totalMonthly, AVERAGES.india.monthly, AVERAGES.global.monthly],
-        backgroundColor: [getScoreColor(result.score), '#3b82f6', '#ef4444'],
-        borderRadius: 8,
-        borderSkipped: false as const,
-      },
-    ],
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#a1a1aa', font: { size: 12 } } },
-    },
-  };
-
-  const barOptions = {
-    ...chartOptions,
-    scales: {
-      x: { ticks: { color: '#a1a1aa' }, grid: { color: '#1a1a1a' } },
-      y: { ticks: { color: '#a1a1aa' }, grid: { color: '#1a1a1a' } },
-    },
   };
 
   return (
@@ -237,351 +139,22 @@ export default function Calculator() {
 
         {/* ===== Step Content ===== */}
         <div className="calculator-content">
-          {/* ----- Step 1: Transport ----- */}
           {currentStep === 0 && (
-            <div className="calc-step fade-in">
-              <h2 className="calc-step-title">
-                <Car size={24} className="icon-green" />
-                {t('transportHeader')}
-              </h2>
-
-              {/* Commute mode */}
-              <div className="form-group">
-                <label className="form-label">{locale === 'en' ? 'How do you commute daily?' : 'आप रोजाना कैसे यात्रा करते हैं?'}</label>
-                <div className="radio-grid">
-                  {commuteModes.map((mode) => (
-                    <button
-                      key={mode.value}
-                      type="button"
-                      className={`radio-card ${
-                        transport.commuteMode === mode.value ? 'radio-card-selected' : ''
-                      }`}
-                      onClick={() =>
-                        setTransport((p) => ({ ...p, commuteMode: mode.value }))
-                      }
-                    >
-                      {mode.icon}
-                      <span>{mode.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Daily distance */}
-              <div className="form-group">
-                <label htmlFor="daily-distance" className="form-label">
-                  {t('dailyDistance')}
-                  <span className="form-value">{transport.dailyDistance} km</span>
-                </label>
-                <input
-                  id="daily-distance"
-                  type="range"
-                  min={0}
-                  max={100}
-                  value={transport.dailyDistance}
-                  onChange={(e) =>
-                    setTransport((p) => ({
-                      ...p,
-                      dailyDistance: Number(e.target.value),
-                    }))
-                  }
-                  className="range-slider"
-                />
-                <div className="range-labels">
-                  <span>0 km</span>
-                  <span>100 km</span>
-                </div>
-              </div>
-
-              {/* Flights */}
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="short-haul-flights" className="form-label">
-                    <Plane size={16} className="icon-green" />
-                    {t('shortFlights')}
-                  </label>
-                  <input
-                    id="short-haul-flights"
-                    type="number"
-                    min={0}
-                    max={50}
-                    value={transport.shortHaulFlights}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setTransport((p) => ({
-                        ...p,
-                        shortHaulFlights: val === '' ? '' : Number(val),
-                      }));
-                    }}
-                    className="form-input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="long-haul-flights" className="form-label">
-                    <Plane size={16} className="icon-green" />
-                    {t('longFlights')}
-                  </label>
-                  <input
-                    id="long-haul-flights"
-                    type="number"
-                    min={0}
-                    max={50}
-                    value={transport.longHaulFlights}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setTransport((p) => ({
-                        ...p,
-                        longHaulFlights: val === '' ? '' : Number(val),
-                      }));
-                    }}
-                    className="form-input"
-                  />
-                </div>
-              </div>
-            </div>
+            <Step1Transport data={transport} onChange={setTransport} />
           )}
-
-          {/* ----- Step 2: Energy ----- */}
           {currentStep === 1 && (
-            <div className="calc-step fade-in">
-              <h2 className="calc-step-title">
-                <Zap size={24} className="icon-green" />
-                {t('energyHeader')}
-              </h2>
-
-              {/* Electricity */}
-              <div className="form-group">
-                <label htmlFor="monthly-electricity" className="form-label">
-                  {t('electricity')}
-                  <span className="form-value">{energy.monthlyElectricity} kWh</span>
-                </label>
-                <input
-                  id="monthly-electricity"
-                  type="range"
-                  min={0}
-                  max={1000}
-                  step={10}
-                  value={energy.monthlyElectricity}
-                  onChange={(e) =>
-                    setEnergy((p) => ({
-                      ...p,
-                      monthlyElectricity: Number(e.target.value),
-                    }))
-                  }
-                  className="range-slider"
-                />
-                <div className="range-labels">
-                  <span>0 kWh</span>
-                  <span>1000 kWh</span>
-                </div>
-              </div>
-
-              {/* Cooking fuel */}
-              <div className="form-group">
-                <label className="form-label">
-                  <Flame size={16} className="icon-green" />
-                  {t('cookingFuel')}
-                </label>
-                <div className="radio-grid radio-grid-4">
-                  {cookingFuels.map((fuel) => (
-                    <button
-                      key={fuel.value}
-                      type="button"
-                      className={`radio-card ${
-                        energy.cookingFuel === fuel.value ? 'radio-card-selected' : ''
-                      }`}
-                      onClick={() =>
-                        setEnergy((p) => ({ ...p, cookingFuel: fuel.value }))
-                      }
-                    >
-                      <span>{fuel.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Household size */}
-              <div className="form-group">
-                <label htmlFor="household-size" className="form-label">
-                  <Users size={16} className="icon-green" />
-                  {t('householdSize')}
-                  <span className="form-value">
-                    {energy.householdSize} {locale === 'en' ? (energy.householdSize === 1 ? 'person' : 'people') : 'लोग'}
-                  </span>
-                </label>
-                <input
-                  id="household-size"
-                  type="range"
-                  min={1}
-                  max={8}
-                  value={energy.householdSize}
-                  onChange={(e) =>
-                    setEnergy((p) => ({
-                      ...p,
-                      householdSize: Number(e.target.value),
-                    }))
-                  }
-                  className="range-slider"
-                />
-                <div className="range-labels">
-                  <span>1</span>
-                  <span>8</span>
-                </div>
-              </div>
-            </div>
+            <Step2Energy data={energy} onChange={setEnergy} />
           )}
-
-          {/* ----- Step 3: Diet & Lifestyle ----- */}
           {currentStep === 2 && (
-            <div className="calc-step fade-in">
-              <h2 className="calc-step-title">
-                <Salad size={24} className="icon-green" />
-                {t('dietHeader')}
-              </h2>
-
-              {/* Diet type */}
-              <div className="form-group">
-                <label className="form-label">{locale === 'en' ? 'What best describes your diet?' : 'आपके आहार का सबसे अच्छा वर्णन क्या है?'}</label>
-                <div className="radio-grid radio-grid-4">
-                  {dietTypes.map((d) => (
-                    <button
-                      key={d.value}
-                      type="button"
-                      className={`radio-card radio-card-diet ${
-                        diet.dietType === d.value ? 'radio-card-selected' : ''
-                      }`}
-                      onClick={() =>
-                        setDiet((p) => ({ ...p, dietType: d.value }))
-                      }
-                    >
-                      <span className="diet-emoji">{d.emoji}</span>
-                      <span>{d.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Online orders */}
-              <div className="form-group">
-                <label htmlFor="online-orders" className="form-label">
-                  <ShoppingBag size={16} className="icon-green" />
-                  {t('onlineOrders')}
-                  <span className="form-value">{diet.monthlyOnlineOrders}</span>
-                </label>
-                <input
-                  id="online-orders"
-                  type="range"
-                  min={0}
-                  max={30}
-                  value={diet.monthlyOnlineOrders}
-                  onChange={(e) =>
-                    setDiet((p) => ({
-                      ...p,
-                      monthlyOnlineOrders: Number(e.target.value),
-                    }))
-                  }
-                  className="range-slider"
-                />
-                <div className="range-labels">
-                  <span>0</span>
-                  <span>30</span>
-                </div>
-              </div>
-
-              {/* New clothes */}
-              <div className="form-group">
-                <label htmlFor="new-clothes" className="form-label">
-                  <Shirt size={16} className="icon-green" />
-                  {t('newClothes')}
-                  <span className="form-value">{diet.newClothesPerMonth}</span>
-                </label>
-                <input
-                  id="new-clothes"
-                  type="range"
-                  min={0}
-                  max={20}
-                  value={diet.newClothesPerMonth}
-                  onChange={(e) =>
-                    setDiet((p) => ({
-                      ...p,
-                      newClothesPerMonth: Number(e.target.value),
-                    }))
-                  }
-                  className="range-slider"
-                />
-                <div className="range-labels">
-                  <span>0</span>
-                  <span>20</span>
-                </div>
-              </div>
-            </div>
+            <Step3Diet data={diet} onChange={setDiet} />
           )}
-
-          {/* ----- Step 4: Results ----- */}
           {currentStep === 3 && (
-            <div className="calc-step fade-in">
-              <h2 className="calc-step-title">
-                <BarChart3 size={24} className="icon-green" />
-                {t('yourResults')}
-              </h2>
-
-              {/* Total card */}
-              <div className="result-total-card" style={{ borderColor: getScoreColor(result.score) }}>
-                <div className="result-score-emoji">{getScoreEmoji(result.score)}</div>
-                <div className="result-total-value">
-                  {result.totalMonthly.toFixed(1)}
-                  <span className="result-total-unit">{locale === 'en' ? 'kg CO₂/month' : 'किग्रा CO₂/माह'}</span>
-                </div>
-                <div className="result-annual">
-                  {result.totalAnnual.toFixed(2)} {locale === 'en' ? 'tons/year' : 'टन/वर्ष'}
-                </div>
-                <div
-                  className="result-score-badge"
-                  style={{
-                    backgroundColor: getScoreColor(result.score) + '20',
-                    color: getScoreColor(result.score),
-                    borderColor: getScoreColor(result.score) + '40',
-                  }}
-                >
-                  {result.score}
-                </div>
-              </div>
-
-              {/* Charts */}
-              <div className="charts-grid">
-                <div className="card">
-                  <h3 className="card-title">{t('categoryBreakdown')}</h3>
-                  <div className="chart-container">
-                    <Doughnut data={doughnutData} options={chartOptions} />
-                  </div>
-                </div>
-                <div className="card">
-                  <h3 className="card-title">{locale === 'en' ? 'Comparison' : 'तुलना'}</h3>
-                  <div className="chart-container">
-                    <Bar data={barData} options={barOptions} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Action buttons */}
-              <div className="result-actions">
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSave}
-                  disabled={saved}
-                >
-                  <Save size={18} />
-                  {saved ? (locale === 'en' ? 'Saved!' : 'सहेज लिया!') : t('saveResults')}
-                </button>
-                <button
-                  className="btn btn-outline"
-                  onClick={handleGetInsights}
-                >
-                  <Sparkles size={18} />
-                  {locale === 'en' ? 'Get AI Insights' : 'एआई इनसाइट्स प्राप्त करें'}
-                </button>
-              </div>
-            </div>
+            <Step4Results
+              result={result}
+              saved={saved}
+              onSave={handleSave}
+              onGetInsights={handleGetInsights}
+            />
           )}
         </div>
 
@@ -614,4 +187,3 @@ export default function Calculator() {
     </div>
   );
 }
-

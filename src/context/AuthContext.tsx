@@ -7,7 +7,7 @@ type RegisteredUser = User & { password?: string };
 
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -35,10 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
   });
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const login = async (email: string, password: string): Promise<void> => {
-    setLoading(true);
+    setIsLoading(true);
     // Simulate API network latency (400ms)
     await new Promise((resolve) => setTimeout(resolve, 400));
 
@@ -71,12 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('ecotrack_current_user', JSON.stringify(userSession));
       setUser(userSession);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   const register = async (name: string, email: string, password: string): Promise<void> => {
-    setLoading(true);
+    setIsLoading(true);
     // Simulate API network latency (400ms)
     await new Promise((resolve) => setTimeout(resolve, 400));
 
@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('ecotrack_current_user', JSON.stringify(userSession));
       setUser(userSession);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -129,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

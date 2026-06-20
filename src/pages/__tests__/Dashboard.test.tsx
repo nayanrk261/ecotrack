@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Dashboard from '../Dashboard';
 import { LanguageProvider } from '../../context/LanguageContext';
@@ -42,6 +42,7 @@ describe('Dashboard Component', () => {
     mockUseCarbon.mockReturnValue({
       footprints: [],
       latest: null,
+      clearHistory: vi.fn(),
     });
 
     renderComponent();
@@ -49,9 +50,32 @@ describe('Dashboard Component', () => {
     expect(screen.getByText('No Data Yet')).toBeInTheDocument();
     expect(screen.getByText(/Calculate your carbon footprint first/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Calculate Your Footprint/i })).toBeInTheDocument();
+
+    // Data panels should NOT appear in empty state
+    expect(screen.queryByText('Data Settings')).not.toBeInTheDocument();
+    expect(screen.queryByText('Recent History')).not.toBeInTheDocument();
   });
 
-  it('renders calculation stats, charts, history, and leaderboard when data is present', () => {
+  it('renders empty state when localStorage is empty (first-time visitor)', () => {
+    // Simulate a pristine browser with no stored data at all
+    localStorage.clear();
+    mockUseCarbon.mockReturnValue({
+      footprints: [],
+      latest: null,
+      clearHistory: vi.fn(),
+    });
+
+    renderComponent();
+
+    // Should gracefully show the empty / onboarding prompt
+    expect(screen.getByText('No Data Yet')).toBeInTheDocument();
+    // CTA link navigates to calculator
+    const calcLink = screen.getByRole('link', { name: /Calculate Your Footprint/i });
+    expect(calcLink).toBeInTheDocument();
+    expect(calcLink).toHaveAttribute('href', '/calculator');
+  });
+
+  it('renders calculation stats, charts, history, and leaderboard when data is present', async () => {
     const mockFootprintEntry = {
       id: '1',
       date: '2026-06-20T00:00:00.000Z',
@@ -74,24 +98,28 @@ describe('Dashboard Component', () => {
         { ...mockFootprintEntry, id: '2', date: '2026-06-19T00:00:00.000Z' },
       ],
       latest: mockFootprintEntry,
+      clearHistory: vi.fn(),
     });
 
     renderComponent();
 
     // Verify main header
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Green Learner')).toBeInTheDocument();
+    expect(screen.getAllByText('Green Learner').length).toBeGreaterThanOrEqual(1);
 
     // Verify stats cards
     expect(screen.getAllByText('250.0').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('3.00').length).toBeGreaterThanOrEqual(1);
 
-    // Verify charts are rendered (as mocks)
-    expect(screen.getByTestId('mock-line')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-doughnut')).toBeInTheDocument();
+    // DashboardCharts is lazy-loaded: wait for Suspense to resolve before
+    // asserting the chart mock elements are present in the DOM.
+    expect(await screen.findByTestId('mock-line')).toBeInTheDocument();
+    expect(await screen.findByTestId('mock-doughnut')).toBeInTheDocument();
 
     // Verify recent history table
-    expect(screen.getByText('Recent History')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByText('Recent History')).toBeInTheDocument()
+    );
 
     // Verify friends leaderboard
     expect(screen.getByText('Compare with Friends')).toBeInTheDocument();
@@ -105,6 +133,11 @@ describe('Dashboard Component', () => {
   });
 
   it('triggers confirmation dialog when clicking Clear My Data', () => {
+    const clearHistorySpy = vi.fn().mockImplementation(() => {
+      localStorage.removeItem('ecotrack_footprints');
+      localStorage.removeItem('ecotrack_completed_actions');
+    });
+
     mockUseCarbon.mockReturnValue({
       footprints: [
         {
@@ -128,6 +161,7 @@ describe('Dashboard Component', () => {
           score: 'Green Learner',
         },
       },
+      clearHistory: clearHistorySpy,
     });
 
     const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);

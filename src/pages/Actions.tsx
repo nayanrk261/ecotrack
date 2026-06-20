@@ -6,6 +6,8 @@ import toast from 'react-hot-toast';
 import { useCarbon } from '../hooks/useCarbon';
 import { GREEN_ACTIONS } from '../lib/constants';
 import ProgressBar from '../components/ProgressBar';
+import { Card } from '../components/Card';
+import { Badge } from '../components/Badge';
 import type { ActionCategory } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -38,6 +40,10 @@ export default function Actions() {
       ),
     [completedActions]
   );
+
+  const handleSelectCategory = (cat: ActionCategory | 'All') => {
+    setActiveCategory(cat);
+  };
 
   const handleToggle = (actionId: string) => {
     const action = GREEN_ACTIONS.find((a) => a.id === actionId);
@@ -90,7 +96,7 @@ export default function Actions() {
         </p>
 
         {/* ===== Overall Progress ===== */}
-        <div className="card actions-summary">
+        <Card className="actions-summary">
           <div className="actions-summary-grid">
             <div className="summary-stat">
               <Trophy size={24} className="icon-green" />
@@ -112,7 +118,7 @@ export default function Actions() {
             total={GREEN_ACTIONS.length}
             label={locale === 'en' ? 'Overall Progress' : 'कुल प्रगति'}
           />
-        </div>
+        </Card>
 
         {/* ===== Category Filters ===== */}
         <div className="filter-tabs">
@@ -121,7 +127,7 @@ export default function Actions() {
             <button
               key={cat}
               className={`filter-tab ${activeCategory === cat ? 'filter-tab-active' : ''}`}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => handleSelectCategory(cat)}
             >
               {cat === 'All' ? (locale === 'en' ? 'All' : 'सभी') : t(cat.toLowerCase() as 'transport' | 'energy' | 'diet' | 'lifestyle')}
               {cat !== 'All' && (
@@ -142,9 +148,9 @@ export default function Actions() {
           {filtered.map((action) => {
             const isCompleted = completedActions.includes(action.id);
             return (
-              <div
+              <Card
                 key={action.id}
-                className={`card action-card ${isCompleted ? 'action-card-completed' : ''}`}
+                className={`action-card ${isCompleted ? 'action-card-completed' : ''}`}
                 onClick={() => handleToggle(action.id)}
                 role="button"
                 tabIndex={0}
@@ -170,9 +176,9 @@ export default function Actions() {
                   <span className="action-savings">
                     -{action.co2Savings} {locale === 'en' ? 'kg CO₂/yr' : 'किग्रा CO₂/वर्ष'}
                   </span>
-                  <span className="action-category-tag">{t(action.category.toLowerCase() as 'transport' | 'energy' | 'diet' | 'lifestyle')}</span>
+                  <Badge className="action-category-tag">{t(action.category.toLowerCase() as 'transport' | 'energy' | 'diet' | 'lifestyle')}</Badge>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>

@@ -1,3 +1,5 @@
+import type React from 'react';
+
 // ===== Calculator Types =====
 export type CommuteMode = 'car' | 'bike' | 'bus' | 'train' | 'walk';
 export type CookingFuel = 'lpg' | 'png' | 'electric' | 'induction';
@@ -103,5 +105,107 @@ export interface User {
   name: string;
   email: string;
   avatarBg: string; // Gradient Tailwind class or styling value
+}
+
+// ===== Alias and Sub-component Types =====
+export type FootprintData = SavedFootprint;
+export type CalculatorStepIndex = 0 | 1 | 2 | 3;
+
+export interface Step1TransportProps {
+  data: Omit<TransportData, 'shortHaulFlights' | 'longHaulFlights'> & {
+    shortHaulFlights: number | '';
+    longHaulFlights: number | '';
+  };
+  onChange: React.Dispatch<
+    React.SetStateAction<
+      Omit<TransportData, 'shortHaulFlights' | 'longHaulFlights'> & {
+        shortHaulFlights: number | '';
+        longHaulFlights: number | '';
+      }
+    >
+  >;
+}
+
+export interface Step2EnergyProps {
+  data: EnergyData;
+  onChange: React.Dispatch<React.SetStateAction<EnergyData>>;
+}
+
+export interface Step3DietProps {
+  data: DietData;
+  onChange: React.Dispatch<React.SetStateAction<DietData>>;
+}
+
+export interface Step4ResultsProps {
+  result: CarbonResult;
+  saved: boolean;
+  onSave: () => void;
+  onGetInsights: () => void;
+}
+
+export interface DashboardStatsProps {
+  stats: {
+    monthly: number;
+    annual: number;
+    score: CarbonScore;
+    vsIndia: number;
+    vsGlobal: number;
+  };
+}
+
+export interface DashboardChartsProps {
+  footprints: SavedFootprint[];
+  stats: {
+    monthly: number;
+    annual: number;
+    score: CarbonScore;
+    vsIndia: number;
+    vsGlobal: number;
+  };
+}
+
+export interface DashboardHistoryProps {
+  footprints: SavedFootprint[];
+  onDelete: (id: string) => void;
+}
+
+export interface LeaderboardSectionProps {
+  userFootprint: number;
+}
+
+export interface SignInFormProps {
+  onSubmit: (email: string, password: string) => Promise<void>;
+  isLoading: boolean;
+}
+
+export interface SignUpFormProps {
+  onSubmit: (name: string, email: string, password: string) => Promise<void>;
+  isLoading: boolean;
+}
+
+export interface FactCardProps {
+  fact: KeyFact;
+}
+
+export interface QuickTipCardProps {
+  tip: QuickTip;
+}
+
+export interface ResourceCardProps {
+  resource: {
+    title: string;
+    titleHi: string;
+    desc: string;
+    descHi: string;
+    url: string;
+  };
+}
+
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+}
+
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  children: React.ReactNode;
 }
 
